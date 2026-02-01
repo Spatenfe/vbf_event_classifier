@@ -1,0 +1,8 @@
+{
+    "name": "kmeans_5",
+    "params": {
+        "n_clusters": 5,
+        "n_init": "auto",
+        "max_iter": 500
+    }
+}

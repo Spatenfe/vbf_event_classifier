@@ -1,0 +1,11 @@
+{
+    "name": "svc",
+    "params": {
+        "C": 1.0,
+        "kernel": "rbf",
+        "cache_size": 2000,
+        "max_iter": 5000,
+        "decision_function_shape": "ovr",
+        "random_state": 42
+    }
+}

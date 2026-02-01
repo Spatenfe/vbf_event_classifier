@@ -1,0 +1,7 @@
+{
+    "name": "voting_classifier",
+    "params": {
+        "voting": "soft",
+        "n_jobs": -1
+    }
+}

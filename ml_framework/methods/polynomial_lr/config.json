@@ -1,0 +1,9 @@
+{
+    "name": "polynomial_lr",
+    "params": {
+        "degree": 2,
+        "interaction_only": true,
+        "C": 1.0,
+        "max_iter": 500
+    }
+}

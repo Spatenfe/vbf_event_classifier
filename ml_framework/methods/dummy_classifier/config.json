@@ -1,0 +1,6 @@
+{
+    "name": "dummy_classifier",
+    "params": {
+        "strategy": "most_frequent"
+    }
+}

@@ -1,0 +1,23 @@
+from ml_framework.core.base_method import BaseAlgorithm
+from ml_framework.core.registry import Registry
+from sklearn.svm import SVC
+import joblib
+import os
+
+@Registry.register_method("svc")
+class SVCMethod(BaseAlgorithm):
+    def train(self, train_data, val_data=None):
+        X_train, y_train = train_data
+        # Ensure probability is True if needed, but for now stick to params
+        self.model = SVC(**self.params)
+        self.model.fit(X_train, y_train)
+
+    def predict(self, test_data):
+        X_test, _ = test_data
+        return self.model.predict(X_test)
+
+    def save(self, output_dir):
+        joblib.dump(self.model, os.path.join(output_dir, "model.pkl"))
+
+    def load(self, model_path):
+        self.model = joblib.load(model_path)

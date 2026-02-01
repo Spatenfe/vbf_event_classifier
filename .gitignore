@@ -1,0 +1,5 @@
+analysis_results
+.venv
+results
+__pycache__
+data

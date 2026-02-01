@@ -1,0 +1,7 @@
+{
+    "name": "nca_knn",
+    "params": {
+        "n_components": 5,
+        "n_neighbors": 50
+    }
+}

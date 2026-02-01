@@ -1,0 +1,10 @@
+{
+    "name": "nystroem_sgd",
+    "params": {
+        "n_components": 500,
+        "alpha": 0.0001,
+        "max_iter": 2000,
+        "early_stopping": true,
+        "n_iter_no_change": 10
+    }
+}
