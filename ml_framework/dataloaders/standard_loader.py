@@ -39,7 +39,21 @@ class StandardDataloader(BaseDataloader):
         
         # Logic: If data_path is provided, we split. Else fall back to train_path/val_path
         if data_path:
+            print(f"StandardDataloader: Loading data from {data_path}")
             df = pd.read_csv(data_path)
+            
+            # Remove full duplicates first
+            original_len = len(df)
+            df.drop_duplicates(inplace=True)
+            if len(df) < original_len:
+                print(f"StandardDataloader: Dropped {original_len - len(df)} full duplicate rows.")
+            
+            # Remove remaining event_id duplicates (conflicting data for same event)
+            if "event_id" in df.columns:
+                n_conflicts = df.duplicated(subset=["event_id"]).sum()
+                if n_conflicts > 0:
+                    print(f"StandardDataloader: Dropped {n_conflicts} rows with duplicate event_id but different data.")
+                    df.drop_duplicates(subset=["event_id"], keep="first", inplace=True)
             
             if drop_columns:
                 df.drop(columns=drop_columns, inplace=True, errors="ignore")
