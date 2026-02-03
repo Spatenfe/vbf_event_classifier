@@ -85,3 +85,7 @@ Example `datasource` configuration with runtime balancing:
 ```
 
 Available balancing strategies: `"undersample"`, `"oversample"`, or `null` (none).
+
+## Results
+
+![Benchmark Results](results.png)
