@@ -4,7 +4,7 @@
         {
             "name": "large_data",
             "loader": "standard_loader",
-            "data_path": "ml_framework/data/large/matched_events_large.csv",
+            "data_path": "ml_framework/data/cleaned/6m_cleaned.csv",
             "val_split": 0.2,
             "balance_val": true,
             "target_column": "cvv",
