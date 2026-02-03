@@ -6,7 +6,7 @@ from .plotting import plot_comparison, plot_confusion_matrix
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-def _run_single_method(method_config, train_data, test_data, output_dir):
+def _run_single_method(method_config, train_data, val_data, test_data, output_dir, test_mode=False):
     """Worker function for parallel method execution."""
     if isinstance(method_config, str):
         method_name = method_config
@@ -29,16 +29,40 @@ def _run_single_method(method_config, train_data, test_data, output_dir):
     # Train
     method.train(train_data)
     
-    # Predict
-    predictions = method.predict(test_data)
+    combined_metrics = {'method': method_name}
+
+    # Evaluate on Validation Set
+    if val_data is not None:
+        X_val, y_val = val_data
+        val_predictions = method.predict(val_data)
+        val_output_dir = os.path.join(method_output_dir, "val")
+        val_metrics = calculate_metrics(y_val, val_predictions, output_dir=val_output_dir)
+        plot_confusion_matrix(y_val, val_predictions, output_dir=val_output_dir)
+        for k, v in val_metrics.items():
+            combined_metrics[f"val_{k}"] = v
+
+    # Evaluate on Test Set
+    if test_data is not None:
+        X_test, y_test = test_data
+        test_predictions = method.predict(test_data)
+        test_output_dir = os.path.join(method_output_dir, "test")
+        test_metrics = calculate_metrics(y_test, test_predictions, output_dir=test_output_dir)
+        plot_confusion_matrix(y_test, test_predictions, output_dir=test_output_dir)
+        for k, v in test_metrics.items():
+            combined_metrics[f"test_{k}"] = v
+        
+        # Backward compatibility for 'accuracy' column in summary
+        combined_metrics['accuracy'] = test_metrics.get('accuracy')
+        combined_metrics['f1_macro'] = test_metrics.get('f1_macro')
+
+        if test_mode:
+            tqdm.write(f"\n--- Test Results for {method_name} ---")
+            y_test_list = y_test.tolist() if hasattr(y_test, 'tolist') else list(y_test)
+            for pred, exp in zip(test_predictions, y_test_list):
+                tqdm.write(f"Predicted: {pred}, Expected: {exp}")
+            tqdm.write("----------------------------\n")
     
-    # Evaluate
-    X_test, y_test = test_data
-    metrics = calculate_metrics(y_test, predictions, output_dir=method_output_dir)
-    plot_confusion_matrix(y_test, predictions, output_dir=method_output_dir)
-    
-    metrics['method'] = method_name
-    return metrics
+    return combined_metrics
 
 class ExperimentRunner:
     def __init__(self, dataloader_config, method_configs, output_dir="results", n_jobs=1):
@@ -64,7 +88,9 @@ class ExperimentRunner:
         tqdm.write(f"Loading data using {self.dataloader_name}...")
         self.dataloader.load_data()
         train_data = self.dataloader.get_train_data()
+        val_data = self.dataloader.get_val_data()
         test_data = self.dataloader.get_test_data()
+        test_mode = self.dataloader.has_test_set()
         
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -72,7 +98,7 @@ class ExperimentRunner:
             tqdm.write(f"Running methods in parallel (n_jobs={self.n_jobs})...")
             with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
                 futures = {
-                    executor.submit(_run_single_method, m_cfg, train_data, test_data, self.output_dir): m_cfg 
+                    executor.submit(_run_single_method, m_cfg, train_data, val_data, test_data, self.output_dir, test_mode): m_cfg 
                     for m_cfg in self.method_configs
                 }
                 
@@ -89,9 +115,15 @@ class ExperimentRunner:
             for method_config in tqdm(self.method_configs, desc="Methods", leave=False):
                 method_name = method_config if isinstance(method_config, str) else method_config["name"]
                 tqdm.write(f"Running method: {method_name}")
-                metrics = _run_single_method(method_config, train_data, test_data, self.output_dir)
-                self.results.append(metrics)
-                tqdm.write(f"  Finished {method_name}.")
+                try:
+                    metrics = _run_single_method(method_config, train_data, val_data, test_data, self.output_dir, test_mode)
+                    self.results.append(metrics)
+                    tqdm.write(f"  Finished {method_name}.")
+                except Exception as e:
+                    tqdm.write(f"  Error running {method_name}: {e}")
+                    # Optionally log the traceback
+                    import traceback
+                    tqdm.write(traceback.format_exc())
 
         # Generate summary
         if self.results:

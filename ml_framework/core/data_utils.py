@@ -13,14 +13,15 @@ class DataBalancer:
             else:
                 return X, y
             
+        is_numpy = isinstance(X, np.ndarray) # Define is_numpy at the beginning
+        
         # Convert X to DataFrame if it's a numpy array to handle indices easily
-        is_numpy = isinstance(X, np.ndarray)
         if is_numpy:
             X_df = pd.DataFrame(X)
+            y_series = pd.Series(y)
         else:
-            X_df = X.copy()
-            
-        y_series = pd.Series(y)
+            X_df = X.reset_index(drop=True)
+            y_series = pd.Series(y).reset_index(drop=True)
         counts = y_series.value_counts()
         
         np.random.seed(random_state)

@@ -109,6 +109,10 @@ class DataProcessor:
                 normalizer.transform(self.X_test), columns=self.X_test.columns
             )
 
+        # Cast to float32 for memory efficiency
+        self.X_train = self.X_train.astype(np.float32)
+        self.X_test = self.X_test.astype(np.float32)
+
         logging.info(
             f"Final Data shape: Train={self.X_train.shape}, Test={self.X_test.shape}"
         )

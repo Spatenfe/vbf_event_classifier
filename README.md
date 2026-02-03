@@ -62,7 +62,7 @@ Example `datasource` configuration with runtime balancing:
     "loader": "standard_loader",
     "train_path": "data/train.csv",
     "val_path": "data/val.csv",
-    "balance_train": "oversample"
+    "balance_train": "undersample"
 }
 ```
 

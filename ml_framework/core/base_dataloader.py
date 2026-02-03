@@ -15,6 +15,11 @@ class BaseDataloader(ABC):
         pass
 
     @abstractmethod
+    def get_val_data(self):
+        """Return validation data."""
+        pass
+
+    @abstractmethod
     def get_test_data(self):
         """Return testing data."""
         pass
@@ -23,3 +28,7 @@ class BaseDataloader(ABC):
     def get_normalization_stats(self):
         """Return normalization statistics if applicable."""
         pass
+
+    def has_test_set(self):
+        """Return True if a dedicated test set is loaded."""
+        return False

@@ -1,16 +1,17 @@
 {
-    "experiment_name": "default_benchmark_small_oversample",
+    "experiment_name": "benchmark_large",
     "datasource": [
         {
-            "name": "small_data",
+            "name": "large_data",
             "loader": "standard_loader",
-            "train_path": "ml_framework/data/small/train_balanced.csv",
-            "val_path": "ml_framework/data/small/val_balanced.csv",
+            "data_path": "ml_framework/data/large/matched_events_large.csv",
+            "val_split": 0.2,
+            "balance_val": true,
             "target_column": "cvv",
             "drop_columns": [
                 "event_id"
             ],
-            "drop_labels": [],
+            "discard_classes": [],
             "balance_train": "oversample"
         }
     ],
@@ -18,51 +19,13 @@
         {
             "name": "std",
             "scaling": "standard"
-        },
-        {
-            "name": "minmax",
-            "scaling": "minmax"
-        },
-        {
-            "name": "maxabs",
-            "scaling": "maxabs"
-        },
-        {
-            "name": "robust",
-            "scaling": "robust"
-        },
-        {
-            "name": "yeo_johnson",
-            "scaling": "yeo-johnson"
-        },
-        {
-            "name": "quantile_norm",
-            "scaling": "quantile_normal"
-        },
-        {
-            "name": "quantile_uni",
-            "scaling": "quantile_uniform"
         }
     ],
     "methods": [
         "dummy_classifier",
-        "logistic_regression",
-        "random_forest",
-        "svc",
-        "gradient_boosting",
-        "hist_gradient_boosting",
-        "sgd_classifier",
-        "mlp_classifier",
-        "lda",
-        "gaussian_nb",
-        "polynomial_lr",
-        "nystroem_sgd",
-        "bagging_classifier",
-        "voting_classifier",
-        "kmeans_5",
-        "nca_knn"
+        "random_forest"
     ],
     "output": {
-        "dir": "results/default_benchmark"
+        "dir": "results/default_benchmark_temp"
     }
 }
