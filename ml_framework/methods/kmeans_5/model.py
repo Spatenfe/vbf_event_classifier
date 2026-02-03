@@ -12,6 +12,7 @@ class KMeansMethod(BaseAlgorithm):
         n_clusters = self.params.get("n_clusters", 5)
         
         self.model = KMeans(n_clusters=n_clusters, random_state=42)
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train)
         
         # Map clusters to labels

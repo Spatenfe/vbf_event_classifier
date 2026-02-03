@@ -32,7 +32,9 @@ def plot_comparison(results_df, metric="accuracy", output_dir=None):
     Plot comparison of methods.
     results_df: DataFrame containing 'method' and metric columns.
     """
-    plt.figure(figsize=(10, 6))
+    n_methods = int(results_df["method"].nunique()) if "method" in results_df.columns else len(results_df)
+    width = max(10, min(30, 0.6 * max(1, n_methods)))
+    plt.figure(figsize=(width, 6))
     
     # Check for dummy_classifier baseline
     dummy_row = results_df[results_df["method"] == "dummy_classifier"]

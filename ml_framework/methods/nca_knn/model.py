@@ -9,14 +9,23 @@ import os
 class NCAMethod(BaseAlgorithm):
     def train(self, train_data, val_data=None):
         X_train, y_train = train_data
-        
-        n_components = self.params.get("n_components", 2)
-        n_neighbors = self.params.get("n_neighbors", 5)
+
+        requested_components = self.params.get("n_components", 2)
+        requested_neighbors = self.params.get("n_neighbors", 5)
+
+        n_features = X_train.shape[1]
+        n_samples = X_train.shape[0]
+
+        # NeighborhoodComponentsAnalysis requires n_components <= n_features.
+        n_components = max(1, min(int(requested_components), int(n_features)))
+        # KNN requires n_neighbors <= n_samples.
+        n_neighbors = max(1, min(int(requested_neighbors), int(n_samples)))
         
         self.model = Pipeline([
             ("nca", NeighborhoodComponentsAnalysis(n_components=n_components, random_state=42)),
             ("knn", KNeighborsClassifier(n_neighbors=n_neighbors))
         ])
+        self._apply_n_jobs(self.model)
         
         self.model.fit(X_train, y_train)
 

@@ -20,6 +20,7 @@ class NystroemSGDMethod(BaseAlgorithm):
             ("nystroem", Nystroem(n_components=n_components, gamma=gamma, random_state=42)),
             ("clf", SGDClassifier(alpha=alpha, max_iter=max_iter, random_state=42))
         ])
+        self._apply_n_jobs(self.model)
         
         self.model.fit(X_train, y_train)
 

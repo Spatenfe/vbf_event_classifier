@@ -11,6 +11,7 @@ This project provides a structured environment to benchmark multiple classificat
 - **Modular Architecture**: Easy to add new algorithms and dataloaders via a registry system.
 - **Cartesian Product Experiments**: Run experiments across all combinations of datasources and normalization strategies from a single JSON config.
 - **Parallel Execution**: Support for running multiple models in parallel using the `--n-jobs` flag.
+- **Per-Method Threading**: Most sklearn methods that support `n_jobs` can be configured with a `"n_jobs"` entry under method `params` (ignored safely if unsupported).
 - **Runtime Data Balancing**: Optional undersampling or oversampling of training data to handle class imbalance without modifying source files.
 - **Automated Reporting**: Generates summary CSVs, confusion matrices, and accuracy overview plots for every experiment run.
 - **Progress Tracking**: Clear terminal progress bars using tqdm for long-running benchmarks.
@@ -39,6 +40,23 @@ Experiments are defined in JSON files. Run them using `scripts/run_experiment.py
 
 ```bash
 python scripts/run_experiment.py --config benchmark_config.json --n-jobs 4
+```
+
+Note: `--n-jobs` controls how many methods run in parallel (process-level). To control threads *inside* a single method (e.g., RandomForest), set `"n_jobs"` in that method's `params`.
+
+You can also set a global default for per-method threading via a top-level `"method_n_jobs"` key in the experiment config. Individual methods can still override it by specifying `"n_jobs"` inside their own `params`.
+
+Example:
+
+```json
+{
+    "experiment_name": "benchmark_large",
+    "method_n_jobs": 8,
+    "methods": [
+        {"name": "random_forest", "params": {"n_estimators": 300}},
+        {"name": "bagging_classifier", "params": {"n_jobs": 2}}
+    ]
+}
 ```
 
 ### 3. Adding New Components

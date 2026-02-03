@@ -57,6 +57,7 @@ def main():
  
     method_configs = config.get("methods", [])
     experiment_name = config.get('experiment_name', 'Unnamed')
+    method_n_jobs = config.get("method_n_jobs", None)
     
     tqdm.write(f"Starting experiment: {experiment_name}")
     tqdm.write(f"Output Base Directory: {output_base_dir}")
@@ -94,7 +95,8 @@ def main():
                 dataloader_config=dataloader_config,
                 method_configs=method_configs,
                 output_dir=current_output_dir,
-                n_jobs=args.n_jobs
+                n_jobs=args.n_jobs,
+                method_n_jobs=method_n_jobs,
             )
             runner.run()
             

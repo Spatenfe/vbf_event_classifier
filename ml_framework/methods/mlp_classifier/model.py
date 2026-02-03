@@ -20,6 +20,7 @@ class MLPMethod(BaseAlgorithm):
         y_encoded = self.le.fit_transform(y_train)
         
         self.model = MLPClassifier(**self.params)
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train, y_encoded)
 
     def predict(self, test_data):

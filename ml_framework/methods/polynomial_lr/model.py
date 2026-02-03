@@ -20,6 +20,7 @@ class PolynomialLRMethod(BaseAlgorithm):
             ("poly", PolynomialFeatures(degree=poly_degree)),
             ("clf", LogisticRegression(C=lr_C, max_iter=lr_max_iter))
         ])
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train, y_train)
 
     def predict(self, test_data):

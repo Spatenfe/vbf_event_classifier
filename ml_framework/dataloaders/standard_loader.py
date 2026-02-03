@@ -1,10 +1,14 @@
 import pandas as pd
 import numpy as np
+import logging
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, Normalizer, MaxAbsScaler, RobustScaler, PowerTransformer, QuantileTransformer
 from ml_framework.core.base_dataloader import BaseDataloader
 from ml_framework.core.registry import Registry
 from ml_framework.core.data_utils import DataBalancer
+
+
+logger = logging.getLogger(__name__)
 
 @Registry.register_dataloader("standard_loader")
 class StandardDataloader(BaseDataloader):
@@ -39,14 +43,14 @@ class StandardDataloader(BaseDataloader):
         
         # Logic: If data_path is provided, we split. Else fall back to train_path/val_path
         if data_path:
-            print(f"StandardDataloader: Loading data from {data_path}")
+            logger.info("StandardDataloader: Loading data from %s", data_path)
             df = pd.read_csv(data_path)
             
             # Remove full duplicates first
             original_len = len(df)
             df.drop_duplicates(inplace=True)
             if len(df) < original_len:
-                print(f"StandardDataloader: Dropped {original_len - len(df)} full duplicate rows.")
+                logger.info("StandardDataloader: Dropped %s full duplicate rows.", original_len - len(df))
             
             if drop_columns:
                 df.drop(columns=drop_columns, inplace=True, errors="ignore")
@@ -70,7 +74,7 @@ class StandardDataloader(BaseDataloader):
             # Balance Validation Set if requested (User requirement: classes are balanced in validation set)
             if balance_val:
                 # We interpret "balanced" as equal counts (undersample)
-                print("Balancing validation set...")
+                logger.info("Balancing validation set...")
                 self.X_val, self.y_val = DataBalancer.balance(self.X_val, self.y_val, strategy="undersample", random_state=42)
 
         else:
@@ -98,7 +102,7 @@ class StandardDataloader(BaseDataloader):
 
         # Runtime Balancing for Train
         if balance_train:
-            print(f"Applying runtime balancing ({balance_train}) to training data...")
+            logger.info("Applying runtime balancing (%s) to training data...", balance_train)
             self.X_train, self.y_train = DataBalancer.balance(self.X_train, self.y_train, strategy=balance_train)
         
         if test_path:

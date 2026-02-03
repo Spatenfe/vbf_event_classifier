@@ -9,6 +9,7 @@ class HistGradientBoostingMethod(BaseAlgorithm):
     def train(self, train_data, val_data=None):
         X_train, y_train = train_data
         self.model = HistGradientBoostingClassifier(**self.params)
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train, y_train)
 
     def predict(self, test_data):

@@ -20,6 +20,7 @@ class VotingMethod(BaseAlgorithm):
         voting = self.params.get("voting", "soft")
         
         self.model = VotingClassifier(estimators=estimators, voting=voting)
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train, y_train)
 
     def predict(self, test_data):

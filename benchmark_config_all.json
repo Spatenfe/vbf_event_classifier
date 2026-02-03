@@ -47,6 +47,7 @@
             "scaling": "quantile_uniform"
         }
     ],
+    "method_n_jobs": 15,
     "methods": [
         "dummy_classifier",
         "logistic_regression",

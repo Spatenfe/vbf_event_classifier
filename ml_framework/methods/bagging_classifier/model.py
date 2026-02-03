@@ -11,6 +11,7 @@ class BaggingMethod(BaseAlgorithm):
         X_train, y_train = train_data
         # Use DecisionTreeClassifier as default base estimator
         self.model = BaggingClassifier(estimator=DecisionTreeClassifier(), **self.params)
+        self._apply_n_jobs(self.model)
         self.model.fit(X_train, y_train)
 
     def predict(self, test_data):
