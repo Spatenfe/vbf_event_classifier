@@ -1,10 +1,8 @@
 # Classification Framework
 
-A modular framework for evaluating various machine learning classification algorithms across different data distributions and normalization strategies.
-
 ## Overview
 
-This project provides a structured environment to benchmark multiple classification methods (Random Forest, Gradient Boosting, MLP, etc.) against various datasets and preprocessing techniques. It supports parallel execution, runtime data balancing, and automatic generation of comparison results.
+This project provides a structured environment to benchmark multiple classification methods (Random Forest, Gradient Boosting, MLP, etc.) against vbf-event datasets and preprocessing techniques. It supports parallel execution, runtime data balancing, and automatic generation of comparison results.
 
 ## Features
 
@@ -26,15 +24,7 @@ This project provides a structured environment to benchmark multiple classificat
 
 ## Usage
 
-### 1. Data Preparation
-
-Use `scripts/split_data.py` to create balanced validation sets from raw CSV files.
-
-```bash
-python scripts/split_data.py --input path/to/raw_data.csv --output-dir ml_framework/data/my_dataset --balance-train
-```
-
-### 2. Running Experiments
+### 1. Running Experiments
 
 Experiments are defined in JSON files. Run them using `scripts/run_experiment.py`.
 
