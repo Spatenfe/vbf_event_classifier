@@ -166,9 +166,13 @@ class StandardDataloader(BaseDataloader):
         return self.X_train, self.y_train
 
     def get_val_data(self):
+        if self.X_val is None:
+            return None
         return self.X_val, self.y_val
 
     def get_test_data(self):
+        if self.X_test is None:
+            return None
         return self.X_test, self.y_test
 
     def get_normalization_stats(self):

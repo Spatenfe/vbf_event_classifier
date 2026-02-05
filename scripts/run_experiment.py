@@ -26,6 +26,7 @@ import ml_framework.methods.bagging_classifier
 import ml_framework.methods.voting_classifier
 import ml_framework.methods.kmeans_5
 import ml_framework.methods.nca_knn
+import ml_framework.methods.xgb_classifier
 import ml_framework.dataloaders.simple_loader
 import ml_framework.dataloaders.standard_loader
 

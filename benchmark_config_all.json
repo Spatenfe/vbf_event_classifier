@@ -63,7 +63,8 @@
         "bagging_classifier",
         "voting_classifier",
         "kmeans_5",
-        "nca_knn"
+        "nca_knn",
+        "xgb_classifier"
     ],
     "output": {
         "dir": "results/default_benchmark_all"
