@@ -3,3 +3,5 @@ analysis_results
 results
 __pycache__
 data
+analysis_plots
+*.json

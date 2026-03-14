@@ -36,17 +36,24 @@ def main():
     parser = argparse.ArgumentParser(description="Run General Experiment from Config")
     parser.add_argument("--config", type=str, required=True, help="Path to experiment config JSON")
     parser.add_argument("--n-jobs", type=int, default=1, help="Number of parallel jobs for methods")
+    parser.add_argument("--save-models", action="store_true", help="Save trained models in pickle and ONNX format")
     args = parser.parse_args()
     
     with open(args.config, 'r') as f:
         config = json.load(f)
     
-    # ... (Parsing logic remains the same)
+    # Get experiment name first
+    experiment_name = config.get('experiment_name', 'unnamed_experiment')
+    
+    # Get base path from output config (default to "results")
     output_config = config.get("output", {})
     if isinstance(output_config, str):
-        output_base_dir = "results/experiment" 
+        base_path = output_config if output_config else "results"
     else:
-        output_base_dir = output_config.get("dir", "results/experiment")
+        base_path = output_config.get("dir", "results")
+    
+    # Combine base path with experiment name
+    output_base_dir = os.path.join(base_path, experiment_name)
     
     datasources = config.get("datasource", [])
     if isinstance(datasources, dict): datasources = [datasources]
@@ -57,11 +64,22 @@ def main():
     if not normalizations: normalizations = [{}]
  
     method_configs = config.get("methods", [])
-    experiment_name = config.get('experiment_name', 'Unnamed')
     method_n_jobs = config.get("method_n_jobs", None)
     
     tqdm.write(f"Starting experiment: {experiment_name}")
-    tqdm.write(f"Output Base Directory: {output_base_dir}")
+    tqdm.write(f"Output Directory: {output_base_dir}")
+    
+    if os.path.exists(output_base_dir):
+        tqdm.write(f"Error: Output directory '{output_base_dir}' already exists. Exiting to prevent overwriting.")
+        sys.exit(1)
+        
+    os.makedirs(output_base_dir, exist_ok=False)
+    
+    # Copy configuration file to output directory for referencing later
+    import shutil
+    config_dest = os.path.join(output_base_dir, "experiment_config.json")
+    shutil.copy(args.config, config_dest)
+    tqdm.write(f"Saved configuration to: {config_dest}")
     
     import pandas as pd
     import matplotlib
@@ -92,12 +110,16 @@ def main():
             dataloader_config = {"name": loader_name, "params": loader_params}
             current_output_dir = os.path.join(output_base_dir, ds_name, norm_name)
             
+            # Get save_models setting from CLI or config
+            save_models = args.save_models or config.get("save_models", False)
+            
             runner = ExperimentRunner(
                 dataloader_config=dataloader_config,
                 method_configs=method_configs,
                 output_dir=current_output_dir,
                 n_jobs=args.n_jobs,
                 method_n_jobs=method_n_jobs,
+                save_model=save_models,
             )
             runner.run()
             
@@ -117,16 +139,25 @@ def main():
             # Save aggregated CSV
             full_df.to_csv(os.path.join(ds_output_dir, "aggregated_results.csv"), index=False)
             
-            # Plot Accuracy Overview
-            plt.figure(figsize=(14, 8))
-            sns.barplot(x="method", y="accuracy", hue="normalization", data=full_df)
-            plt.title(f"Method Accuracy across Normalizations ({ds_name})")
-            plt.xticks(rotation=45)
-            plt.tight_layout()
-            plt.savefig(os.path.join(ds_output_dir, "accuracy_overview.png"))
-            plt.close()
+            # Determine metric to plot
+            metric_to_plot = None
+            for metric in ["val_accuracy", "test_accuracy", "accuracy"]:
+                if metric in full_df.columns:
+                    metric_to_plot = metric
+                    break
             
-            tqdm.write(f"Created overview plot for {ds_name} at {ds_output_dir}/accuracy_overview.png")
+            if metric_to_plot:
+                # Plot Accuracy Overview
+                plt.figure(figsize=(14, 8))
+                sns.barplot(x="method", y=metric_to_plot, hue="normalization", data=full_df)
+                plt.title(f"Method {metric_to_plot} across Normalizations ({ds_name})")
+                plt.xticks(rotation=45)
+                plt.tight_layout()
+                plt.savefig(os.path.join(ds_output_dir, f"{metric_to_plot}_overview.png"))
+                plt.close()
+                tqdm.write(f"Created overview plot for {ds_name} at {ds_output_dir}/{metric_to_plot}_overview.png")
+            else:
+                tqdm.write(f"Warning: No accuracy metric found to plot for {ds_name}. Columns: {full_df.columns.tolist()}")
 
 if __name__ == "__main__":
     main()

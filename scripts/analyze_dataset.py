@@ -5,9 +5,10 @@ import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+import argparse
 
 # Configuration
-DATA_PATH = "ml_framework/data/cleaned/6m_cleaned.csv"
+DATA_PATH = "ml_framework/data/large/matched_events_all_no_dup.csv"
 OUTPUT_DIR = "analysis_plots"
 
 def create_output_dir():
@@ -96,6 +97,34 @@ def plot_target_correlations(df):
     plt.savefig(os.path.join(OUTPUT_DIR, 'cvv_correlations.png'))
     plt.close()
 
+def plot_binary_target_correlations(df):
+    print("\nGenerating binary target (cvv=1 vs other) correlation plot...")
+    if 'cvv' not in df.columns:
+        print("Target column 'cvv' not found.")
+        return
+
+    # Create binary target
+    binary_target = (df['cvv'] == 1.0).astype(int)
+    
+    # Calculate correlations with the new binary target
+    numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    correlations = df[numerical_cols].drop(columns=['cvv'], errors='ignore').corrwith(binary_target)
+    
+    # Sort by absolute correlation
+    correlations_sorted = correlations.abs().sort_values(ascending=False)
+    # Get original values for sorted index to keep the sign
+    correlations = correlations[correlations_sorted.index]
+
+    # Plot top 20 correlations
+    plt.figure(figsize=(10, 8))
+    sns.barplot(x=correlations.head(20).values, y=correlations.head(20).index, hue=correlations.head(20).index, palette='coolwarm', legend=False)
+    plt.title('Top 20 Feature Correlations with Binary Target (cvv=1 vs other)')
+    plt.xlabel('Correlation Coefficient')
+    plt.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'cvv_binary_correlations.png'))
+    plt.close()
+
 def plot_pca(df):
     print("\nGenerating PCA plot...")
     if 'cvv' not in df.columns:
@@ -167,41 +196,6 @@ def plot_feature_importance(df):
     plt.savefig(os.path.join(OUTPUT_DIR, 'feature_importance.png'))
     plt.close()
 
-def plot_kinematics_by_class(df):
-    print("\nGenerating Comparative Kinematic Plots...")
-    if 'cvv' not in df.columns:
-        print("Target column 'cvv' not found.")
-        return
-
-    kinematics_dir = os.path.join(OUTPUT_DIR, 'kinematics')
-    if not os.path.exists(kinematics_dir):
-        os.makedirs(kinematics_dir)
-
-    # Filter columns ending with _pt, _eta, _phi
-    # Also exclude 'event_id' just in case, though regex handles it.
-    kinematic_cols = [col for col in df.columns if col.endswith(('_pt', '_eta', '_phi'))]
-    
-    
-    # Ensure y is categorical string for hue
-    df_plot = df.copy()
-    
-    # Filter out cvv=1.0 as requested
-    df_plot = df_plot[df_plot['cvv'] != 1.0]
-    
-    df_plot['cvv'] = df_plot['cvv'].astype(str)
-
-    for col in kinematic_cols:
-        plt.figure(figsize=(10, 6))
-        # element='poly' gives the "line" look requested
-        # fill=False makes it just lines
-        # stat='density' normalizes the area to 1, allowing shape comparison
-        sns.histplot(data=df_plot, x=col, hue='cvv', element='poly', fill=False, bins=30, common_norm=False, stat='density')
-        plt.title(f'Normalized Distribution of {col} by Class (cvv)')
-        plt.xlabel(col)
-        plt.ylabel('Frequency')
-        plt.savefig(os.path.join(kinematics_dir, f'{col}_by_class.png'))
-        plt.close()
-
 def plot_structured_correlation_matrix(df):
     print("\nGenerating Structured Correlation Matrix...")
     # Drop event_id and cvv
@@ -235,17 +229,106 @@ def plot_structured_correlation_matrix(df):
     plt.savefig(os.path.join(OUTPUT_DIR, 'structured_correlation_matrix.png'))
     plt.close()
 
+def plot_properties_by_target(df):
+    print("\nGenerating property distributions by target...")
+    prop_dir = os.path.join(OUTPUT_DIR, "property_plots")
+    if not os.path.exists(prop_dir):
+        os.makedirs(prop_dir)
+        print(f"Created output directory: {prop_dir}")
+
+    if 'cvv' not in df.columns:
+        print("Target column 'cvv' not found, skipping property plots.")
+        return
+
+    cols = [col for col in df.columns if col not in ['event_id', 'cvv']]
+    properties = set()
+    for col in cols:
+        if '_' in col:
+            properties.add(col.split('_')[-1])
+        else:
+            properties.add(col)
+
+    import math
+    for prop in properties:
+        prop_cols = [col for col in cols if col.split('_')[-1] == prop or col == prop]
+        if not prop_cols:
+            continue
+
+        n_cols = len(prop_cols)
+        cols_grid = min(4, n_cols)
+        rows_grid = math.ceil(n_cols / cols_grid)
+
+        fig, axes = plt.subplots(rows_grid, cols_grid, figsize=(cols_grid * 5, rows_grid * 4), squeeze=False)
+        axes_flat = axes.flatten()
+
+        mask_cvv1 = (df['cvv'] == 1.0)
+
+        for i, col in enumerate(prop_cols):
+            ax = axes_flat[i]
+            data_red = df[mask_cvv1][col].dropna()
+            data_green = df[~mask_cvv1][col].dropna()
+
+            # Using kdeplot to create smooth line charts instead of bar charts
+            try:
+                sns.kdeplot(data_green, ax=ax, color='green', label='Other', linewidth=2)
+                sns.kdeplot(data_red, ax=ax, color='red', label='cvv=1', linewidth=2)
+            except Exception as e:
+                # Fallback to step histplot if KDE fails (e.g. zero variance)
+                sns.histplot(data_green, ax=ax, color='green', label='Other', stat='density', element='poly', fill=False, bins=30)
+                sns.histplot(data_red, ax=ax, color='red', label='cvv=1', stat='density', element='poly', fill=False, bins=30)
+
+            ax.set_title(f'Distribution of {col}')
+            ax.set_xlabel(col)
+            ax.set_ylabel('Density')
+            ax.legend()
+
+        for i in range(len(prop_cols), len(axes_flat)):
+            fig.delaxes(axes_flat[i])
+
+        plt.suptitle(f'Property: {prop} distributions (cvv=1 vs other)', fontsize=16)
+        plt.tight_layout()
+        plt.savefig(os.path.join(prop_dir, f'property_{prop}.png'))
+        plt.close()
+
 def main():
+    global DATA_PATH, OUTPUT_DIR
+
+    parser = argparse.ArgumentParser(description="Analyze dataset features and distributions.")
+    parser.add_argument("--data_path", type=str, default=DATA_PATH, help="Path to the dataset CSV file.")
+    parser.add_argument("--output_dir", type=str, default=OUTPUT_DIR, help="Directory to save analysis plots.")
+    parser.add_argument("--exclude_columns", nargs='+', default=[], help="List of columns to exclude from analysis.")
+    args = parser.parse_args()
+
+    # Update globals with arguments if provided
+    DATA_PATH = args.data_path
+    OUTPUT_DIR = args.output_dir
+
     create_output_dir()
     df = load_data()
+
+    # Exclude columns
+    if args.exclude_columns:
+        print(f"Excluding columns: {args.exclude_columns}")
+        # Check if columns exist before dropping to avoid errors, or just use ignore errors
+        existing_cols = [col for col in args.exclude_columns if col in df.columns]
+        missing_cols = [col for col in args.exclude_columns if col not in df.columns]
+        
+        if missing_cols:
+            print(f"Warning: Columns not found in dataset: {missing_cols}")
+            
+        if existing_cols:
+            df = df.drop(columns=existing_cols)
+            print(f"Dropped {len(existing_cols)} columns.")
+
     analyze_basic_info(df)
     plot_distributions(df)
     plot_correlation_matrix(df)
     plot_target_correlations(df)
+    plot_binary_target_correlations(df)
     plot_pca(df)
     plot_feature_importance(df)
-    plot_kinematics_by_class(df)
     plot_structured_correlation_matrix(df)
+    plot_properties_by_target(df)
     print(f"\nAnalysis complete. Plots saved to {OUTPUT_DIR}/")
 
 if __name__ == "__main__":

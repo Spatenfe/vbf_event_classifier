@@ -5,9 +5,10 @@ import warnings
 from datetime import datetime
 import time
 import pandas as pd
+import numpy as np
 from .registry import Registry
 from .metrics import calculate_metrics
-from .plotting import plot_comparison, plot_confusion_matrix
+from .plotting import plot_comparison, plot_confusion_matrix, plot_misclassification_overlap, plot_method_agreement_matrix
 from tqdm import tqdm
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -71,6 +72,8 @@ def _run_single_method(
     test_mode=False,
     method_n_jobs=None,
     emit_console_logs=True,
+    save_model=False,
+    feature_names=None,
 ):
     """Worker function for parallel method execution."""
     if isinstance(method_config, str):
@@ -125,8 +128,22 @@ def _run_single_method(
             )
             warnings.showwarning = _showwarning
 
+            # Set output directory if the method supports it (e.g., for plotting)
+            if hasattr(method, 'set_output_dir'):
+                method.set_output_dir(method_output_dir)
+
             # Train
-            method.train(train_data)
+            try:
+                method.train(train_data, val_data=val_data)
+            except TypeError:
+                method.train(train_data)
+            
+            
+            # Save model if requested
+            if save_model:
+                method.save(method_output_dir)
+                # Also export to ONNX if supported
+                method.save_onnx(method_output_dir)
 
             combined_metrics = {'method': method_name}
 
@@ -135,8 +152,16 @@ def _run_single_method(
                 X_val, y_val = val_data
                 val_predictions = method.predict(val_data)
                 val_output_dir = os.path.join(method_output_dir, "val")
+                os.makedirs(val_output_dir, exist_ok=True)
+                np.save(os.path.join(val_output_dir, "predictions.npy"), val_predictions)
+                np.save(os.path.join(val_output_dir, "targets.npy"), y_val)
                 val_metrics = calculate_metrics(y_val, val_predictions, output_dir=val_output_dir)
                 plot_confusion_matrix(y_val, val_predictions, output_dir=val_output_dir)
+                
+                # Generate feature prediction plots
+                if feature_names is not None:
+                    from ml_framework.core.feature_plots import plot_feature_predictions
+                    plot_feature_predictions(X_val, y_val, val_predictions, feature_names, val_output_dir)
                 for k, v in val_metrics.items():
                     combined_metrics[f"val_{k}"] = v
 
@@ -145,6 +170,9 @@ def _run_single_method(
                 X_test, y_test = test_data
                 test_predictions = method.predict(test_data)
                 test_output_dir = os.path.join(method_output_dir, "test")
+                os.makedirs(test_output_dir, exist_ok=True)
+                np.save(os.path.join(test_output_dir, "predictions.npy"), test_predictions)
+                np.save(os.path.join(test_output_dir, "targets.npy"), y_test)
                 test_metrics = calculate_metrics(y_test, test_predictions, output_dir=test_output_dir)
                 plot_confusion_matrix(y_test, test_predictions, output_dir=test_output_dir)
                 for k, v in test_metrics.items():
@@ -160,6 +188,30 @@ def _run_single_method(
                     for pred, exp in zip(test_predictions, y_test_list):
                         tqdm.write(f"Predicted: {pred}, Expected: {exp}")
                     tqdm.write("----------------------------\n")
+
+            # Log completion summary with all available metrics
+            if emit_console_logs:
+                summary_parts = [f"Completed {method_name}:"]
+                
+                # Log validation metrics if available
+                if val_data is not None:
+                    val_acc = combined_metrics.get('val_accuracy')
+                    val_f1 = combined_metrics.get('val_f1_macro')
+                    if val_acc is not None:
+                        summary_parts.append(f"val_acc={val_acc:.4f}")
+                    if val_f1 is not None:
+                        summary_parts.append(f"val_f1={val_f1:.4f}")
+                
+                # Log test metrics if available
+                if test_data is not None:
+                    test_acc = combined_metrics.get('test_accuracy')
+                    test_f1 = combined_metrics.get('test_f1_macro')
+                    if test_acc is not None:
+                        summary_parts.append(f"test_acc={test_acc:.4f}")
+                    if test_f1 is not None:
+                        summary_parts.append(f"test_f1={test_f1:.4f}")
+                
+                _logger.info(" | ".join(summary_parts))
 
             return combined_metrics
     except Exception:
@@ -179,10 +231,12 @@ class ExperimentRunner:
         output_dir="results",
         n_jobs=1,
         method_n_jobs=None,
+        save_model=False,
     ):
         self.output_dir = output_dir
         self.n_jobs = n_jobs
         self.method_n_jobs = method_n_jobs
+        self.save_model = save_model
         
         # Load Dataloader
         if isinstance(dataloader_config, str):
@@ -198,6 +252,7 @@ class ExperimentRunner:
         self.dataloader_name = dataloader_name
         self.method_configs = method_configs if isinstance(method_configs, list) else [method_configs]
         self.results = []
+        self.feature_names = None  # Store feature names for plotting
 
     def run(self):
         tqdm.write(f"Loading data using {self.dataloader_name}...")
@@ -206,6 +261,52 @@ class ExperimentRunner:
         val_data = self.dataloader.get_val_data()
         test_data = self.dataloader.get_test_data()
         test_mode = self.dataloader.has_test_set()
+        
+        # Log input features and output classes
+        X_train, y_train = train_data
+        import numpy as np
+        
+        # Get feature information
+        n_features = X_train.shape[1] if hasattr(X_train, 'shape') else len(X_train[0])
+        tqdm.write(f"\n{'='*60}".rstrip())
+        tqdm.write("Dataset Information:".rstrip())
+        tqdm.write(f"{'='*60}".rstrip())
+        tqdm.write(f"Number of input features: {n_features}".rstrip())
+        
+        # Get feature names if available
+        feature_names = None
+        if hasattr(X_train, 'columns'):
+            feature_names = list(X_train.columns)
+        elif hasattr(self.dataloader, 'feature_names'):
+            feature_names = self.dataloader.feature_names
+        
+        if feature_names:
+            tqdm.write(f"\nInput features ({len(feature_names)}):".rstrip())
+            # Print ALL features in a readable format, 5 per line
+            for i in range(0, len(feature_names), 5):
+                batch = feature_names[i:i+5]
+                tqdm.write(f"  {', '.join(batch)}".rstrip())
+        else:
+            tqdm.write(f"Feature names not available (using {n_features} numeric features)".rstrip())
+        
+        # Get class information
+        unique_classes = np.unique(y_train)
+        class_counts = {cls: np.sum(y_train == cls) for cls in unique_classes}
+        tqdm.write(f"\nOutput classes: {unique_classes.tolist()}".rstrip())
+        tqdm.write("Class distribution (train):".rstrip())
+        for cls, count in class_counts.items():
+            percentage = (count / len(y_train)) * 100
+            tqdm.write(f"  Class {cls}: {count} samples ({percentage:.2f}%)".rstrip())
+        
+        tqdm.write(f"\nTrain samples: {len(y_train)}".rstrip())
+        if val_data is not None:
+            tqdm.write(f"Validation samples: {len(val_data[1])}".rstrip())
+        if test_data is not None:
+            tqdm.write(f"Test samples: {len(test_data[1])}".rstrip())
+        tqdm.write(f"{'='*60}\n".rstrip())
+        
+        # Store feature names for plotting
+        self.feature_names = feature_names
         
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -227,6 +328,8 @@ class ExperimentRunner:
                         test_mode,
                         self.method_n_jobs,
                         False,
+                        self.save_model,
+                        self.feature_names,
                     )
                     futures[future] = m_cfg
                     start_times[future] = time.monotonic()
@@ -257,6 +360,9 @@ class ExperimentRunner:
                         self.output_dir,
                         test_mode,
                         self.method_n_jobs,
+                        True,
+                        self.save_model,
+                        self.feature_names,
                     )
                     self.results.append(metrics)
                     elapsed = time.monotonic() - t0
@@ -272,7 +378,42 @@ class ExperimentRunner:
             results_df = pd.DataFrame(self.results)
             results_df.to_csv(os.path.join(self.output_dir, "summary_results.csv"), index=False)
             
-            plot_comparison(results_df, metric="accuracy", output_dir=self.output_dir)
-            plot_comparison(results_df, metric="f1_macro", output_dir=self.output_dir)
-        
+            possible_metrics = ["val_accuracy", "test_accuracy", "val_f1_macro", "test_f1_macro"]
+            for metric in possible_metrics:
+                if metric in results_df.columns:
+                    plot_comparison(results_df, metric=metric, output_dir=self.output_dir)
+                    
+            # Generate overlapping mistakes and agreement plots
+            _generate_overlap_and_agreement_plots(self.method_configs, self.output_dir)
+            
         tqdm.write(f"Combination {self.dataloader_name} finished.")
+
+def _generate_overlap_and_agreement_plots(method_configs, output_dir):
+    """
+    Helper function to gather predictions and call the new plotting functions.
+    """
+    for split in ['val', 'test']:
+        methods_predictions = {}
+        targets = None
+        
+        for method_config in method_configs:
+            method_name = method_config if isinstance(method_config, str) else method_config["name"]
+            preds_path = os.path.join(output_dir, method_name, split, "predictions.npy")
+            targets_path = os.path.join(output_dir, method_name, split, "targets.npy")
+            
+            if os.path.exists(preds_path) and os.path.exists(targets_path):
+                methods_predictions[method_name] = np.load(preds_path, allow_pickle=True)
+                if targets is None:
+                    targets = np.load(targets_path, allow_pickle=True)
+                    
+        if methods_predictions and targets is None:
+            # We have predictions but didn't find targets (though we should have if both exist)
+            pass
+        elif methods_predictions and targets is not None:
+            try:
+                plot_misclassification_overlap(methods_predictions, targets, output_dir, dataset_name=split)
+                plot_method_agreement_matrix(methods_predictions, output_dir, dataset_name=split)
+            except Exception as e:
+                import traceback
+                tqdm.write(f"Error generating overlap/agreement plots for {split}: {e}")
+                tqdm.write(traceback.format_exc())

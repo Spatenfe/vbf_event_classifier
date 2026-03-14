@@ -21,6 +21,7 @@ class StandardDataloader(BaseDataloader):
         self.X_test = None
         self.y_test = None
         self._has_dedicated_test = False
+        self.feature_names = None  # Store feature names
         
     def load_data(self):
         params = self.config.get("params", {})
@@ -31,9 +32,14 @@ class StandardDataloader(BaseDataloader):
         target_column = params.get("target_column", "cvv")
         drop_columns = params.get("drop_columns", [])
         drop_labels = params.get("discard_classes", params.get("drop_labels", []))
+        merge_classes = params.get("merge_classes", [])
         balance_train = params.get("balance_train", False)
         balance_val = params.get("balance_val", True) # Default to true as per request logic if splitting
         val_split_ratio = params.get("val_split", 0.2)
+
+        # Helper to merge labels
+        def apply_class_merging(df, target_col, merge_config):
+            return DataBalancer.merge_and_balance_classes(df, target_col, merge_config)
 
         # Helper to filter labels
         def filter_labels(df, target_col, labels_to_drop):
@@ -55,6 +61,7 @@ class StandardDataloader(BaseDataloader):
             if drop_columns:
                 df.drop(columns=drop_columns, inplace=True, errors="ignore")
             
+            df = apply_class_merging(df, target_column, merge_classes)
             df = filter_labels(df, target_column, drop_labels)
             
             X = df.drop(columns=[target_column])
@@ -85,6 +92,7 @@ class StandardDataloader(BaseDataloader):
             if drop_columns:
                 df_train.drop(columns=drop_columns, inplace=True, errors="ignore")
                 
+            df_train = apply_class_merging(df_train, target_column, merge_classes)
             df_train = filter_labels(df_train, target_column, drop_labels)
                 
             self.X_train = df_train.drop(columns=[target_column])
@@ -94,7 +102,7 @@ class StandardDataloader(BaseDataloader):
                 df_val = pd.read_csv(val_path)
                 if drop_columns:
                     df_val.drop(columns=drop_columns, inplace=True, errors="ignore")
-                
+                apply_class_merging(df_val, target_column, merge_classes)
                 df_val = filter_labels(df_val, target_column, drop_labels)
                 
                 self.X_val = df_val.drop(columns=[target_column])
@@ -102,28 +110,36 @@ class StandardDataloader(BaseDataloader):
 
         # Runtime Balancing for Train
         if balance_train:
+            oversample_factor = params.get("oversample_factor")
             logger.info("Applying runtime balancing (%s) to training data...", balance_train)
-            self.X_train, self.y_train = DataBalancer.balance(self.X_train, self.y_train, strategy=balance_train)
+            if oversample_factor:
+                 logger.info("Oversampling factor: %s", oversample_factor)
+            self.X_train, self.y_train = DataBalancer.balance(
+                self.X_train, 
+                self.y_train, 
+                strategy=balance_train, 
+                oversample_factor=oversample_factor
+            )
         
         if test_path:
             df_test = pd.read_csv(test_path)
             if drop_columns:
                 df_test.drop(columns=drop_columns, inplace=True, errors="ignore")
-            
+            apply_class_merging(df_test, target_column, merge_classes)
             df_test = filter_labels(df_test, target_column, drop_labels)
             
             self.X_test = df_test.drop(columns=[target_column])
             self.y_test = df_test[target_column].astype(str)
             self._has_dedicated_test = True
-        elif self.X_val is not None:
-             # Use val as test if test not provided
-            self.X_test = self.X_val
-            self.y_test = self.y_val
-            
+        
         # Preprocessing
         self._preprocess(params)
 
     def _preprocess(self, params):
+        # Store feature names before preprocessing (which converts to numpy)
+        if hasattr(self.X_train, 'columns'):
+            self.feature_names = list(self.X_train.columns)
+        
         preprocessing = params.get("preprocessing", {})
         scaling = preprocessing.get("scaling")
         normalization = preprocessing.get("normalization")

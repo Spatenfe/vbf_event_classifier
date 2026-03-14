@@ -18,6 +18,8 @@ dependencies = [
   "seaborn",
   "tqdm",
   "joblib",
+  "skl2onnx",
+  "onnxruntime",
 ]
 
 [project.optional-dependencies]

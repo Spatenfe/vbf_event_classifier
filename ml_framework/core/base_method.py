@@ -51,6 +51,64 @@ class BaseAlgorithm(ABC):
 
         estimator.set_params(**{k: self.n_jobs for k in n_jobs_keys})
 
+    def save_onnx(self, output_dir, model_name="model.onnx"):
+        """Save model in ONNX format if possible.
+        
+        This method attempts to convert sklearn models to ONNX format using skl2onnx.
+        It will gracefully fail if the model type is not supported or if there are
+        conversion issues.
+        
+        Args:
+            output_dir: Directory where the ONNX model will be saved
+            model_name: Name of the ONNX file (default: "model.onnx")
+            
+        Returns:
+            bool: True if export was successful, False otherwise
+        """
+        try:
+            from skl2onnx import to_onnx
+            from skl2onnx.common.data_types import FloatTensorType
+            import numpy as np
+            
+            if not hasattr(self, 'model') or self.model is None:
+                logging.getLogger(__name__).warning("No model to export to ONNX")
+                return False
+            
+            # Get number of features from the model
+            if not hasattr(self.model, 'n_features_in_'):
+                logging.getLogger(__name__).warning(
+                    "Model doesn't have n_features_in_ attribute, cannot infer input shape"
+                )
+                return False
+            
+            n_features = self.model.n_features_in_
+            
+            # Define initial types for ONNX conversion
+            initial_types = [('float_input', FloatTensorType([None, n_features]))]
+            
+            # Convert to ONNX
+            onx = to_onnx(self.model, initial_types=initial_types, target_opset=12)
+            
+            # Save ONNX model
+            os.makedirs(output_dir, exist_ok=True)
+            onnx_path = os.path.join(output_dir, model_name)
+            with open(onnx_path, "wb") as f:
+                f.write(onx.SerializeToString())
+            
+            logging.getLogger(__name__).info(f"Successfully exported model to {onnx_path}")
+            return True
+            
+        except ImportError:
+            logging.getLogger(__name__).warning(
+                "skl2onnx not installed, skipping ONNX export"
+            )
+            return False
+        except Exception as e:
+            logging.getLogger(__name__).warning(
+                f"Could not export to ONNX: {type(e).__name__}: {e}"
+            )
+            return False
+
     @classmethod
     def get_default_config(cls):
         """
