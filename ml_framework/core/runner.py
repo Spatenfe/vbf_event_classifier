@@ -78,12 +78,14 @@ def _run_single_method(
     """Worker function for parallel method execution."""
     if isinstance(method_config, str):
         method_name = method_config
+        method_alias = method_config
         user_params = {}
     else:
         method_name = method_config["name"]
+        method_alias = method_config.get("alias", method_name)
         user_params = method_config.get("params", {})
 
-    method_output_dir = os.path.join(output_dir, method_name)
+    method_output_dir = os.path.join(output_dir, method_alias)
     os.makedirs(method_output_dir, exist_ok=True)
     run_log_path = os.path.join(method_output_dir, "run.log")
 
@@ -145,7 +147,7 @@ def _run_single_method(
                 # Also export to ONNX if supported
                 method.save_onnx(method_output_dir)
 
-            combined_metrics = {'method': method_name}
+            combined_metrics = {'method': method_alias}
 
             # Evaluate on Validation Set
             if val_data is not None:
@@ -191,7 +193,7 @@ def _run_single_method(
 
             # Log completion summary with all available metrics
             if emit_console_logs:
-                summary_parts = [f"Completed {method_name}:"]
+                summary_parts = [f"Completed {method_alias}:"]
                 
                 # Log validation metrics if available
                 if val_data is not None:

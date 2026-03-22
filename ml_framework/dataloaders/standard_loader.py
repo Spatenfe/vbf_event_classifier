@@ -102,7 +102,7 @@ class StandardDataloader(BaseDataloader):
                 df_val = pd.read_csv(val_path)
                 if drop_columns:
                     df_val.drop(columns=drop_columns, inplace=True, errors="ignore")
-                apply_class_merging(df_val, target_column, merge_classes)
+                df_val = apply_class_merging(df_val, target_column, merge_classes)
                 df_val = filter_labels(df_val, target_column, drop_labels)
                 
                 self.X_val = df_val.drop(columns=[target_column])
@@ -125,7 +125,7 @@ class StandardDataloader(BaseDataloader):
             df_test = pd.read_csv(test_path)
             if drop_columns:
                 df_test.drop(columns=drop_columns, inplace=True, errors="ignore")
-            apply_class_merging(df_test, target_column, merge_classes)
+            df_test = apply_class_merging(df_test, target_column, merge_classes)
             df_test = filter_labels(df_test, target_column, drop_labels)
             
             self.X_test = df_test.drop(columns=[target_column])
@@ -166,7 +166,7 @@ class StandardDataloader(BaseDataloader):
             if self.X_val is not None: self.X_val = scaler.transform(self.X_val)
             if self.X_test is not None: self.X_test = scaler.transform(self.X_test)
             
-        if normalization:
+        if normalization and normalization != "none":
             normalizer = Normalizer(norm=normalization)
             self.X_train = normalizer.fit_transform(self.X_train)
             if self.X_val is not None: self.X_val = normalizer.transform(self.X_val)

@@ -18,6 +18,7 @@ import ml_framework.methods.gradient_boosting
 import ml_framework.methods.hist_gradient_boosting
 import ml_framework.methods.sgd_classifier
 import ml_framework.methods.mlp_classifier
+import ml_framework.methods.mlp_bottleneck_classifier
 import ml_framework.methods.lda
 import ml_framework.methods.gaussian_nb
 import ml_framework.methods.polynomial_lr
