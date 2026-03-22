@@ -1,3 +1,4 @@
+import logging
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -6,6 +7,8 @@ from sklearn.metrics import confusion_matrix
 import os
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 def plot_confusion_matrix(y_true, y_pred, labels=None, output_dir=None):
     """
@@ -34,7 +37,7 @@ def plot_comparison(results_df, metric="accuracy", output_dir=None):
     results_df: DataFrame containing 'method' and metric columns.
     """
     if metric not in results_df.columns:
-        print(f"Warning: Metric '{metric}' not found in results. Skipping plot.")
+        logger.warning("Metric '%s' not found in results. Skipping plot.", metric)
         return
 
     n_methods = int(results_df["method"].nunique()) if "method" in results_df.columns else len(results_df)
@@ -78,7 +81,7 @@ def plot_misclassification_overlap(methods_predictions: dict, targets: np.ndarra
     
     for method_name, preds in filtered_methods.items():
         if len(preds) != n_samples:
-            print(f"Warning: predictions for {method_name} do not match target length. Skipping for overlap plot.")
+            logger.warning("Predictions for '%s' do not match target length. Skipping for overlap plot.", method_name)
             continue
         misclassifications.append(preds != targets)
         
@@ -132,7 +135,7 @@ def plot_method_agreement_matrix(methods_predictions: dict, output_dir: str, dat
     # Check lengths
     lengths = {len(p) for p in methods_predictions.values()}
     if len(lengths) > 1:
-        print("Warning: Prediction arrays have different lengths. Cannot plot agreement matrix.")
+        logger.warning("Prediction arrays have different lengths. Cannot plot agreement matrix.")
         return
         
     n_samples = list(lengths)[0]

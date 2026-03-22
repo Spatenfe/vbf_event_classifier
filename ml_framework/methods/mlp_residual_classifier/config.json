@@ -1,0 +1,21 @@
+{
+    "name": "mlp_residual_classifier",
+    "params": {
+        "hidden_layer_sizes": [256, 128, 64],
+        "activation": "relu",
+        "alpha": 0.002,
+        "batch_size": 256,
+        "learning_rate_init": 0.005,
+        "max_iter": 1000,
+        "early_stopping": true,
+        "validation_fraction": 0.2,
+        "n_iter_no_change": 50,
+        "dropout_rate": 0.30,
+        "batch_norm": true,
+        "se_ratio": 0,
+        "random_state": 42,
+        "lr_scheduler": "reduce_on_plateau",
+        "label_smoothing": 0.0,
+        "loss_fn": "bce"
+    }
+}

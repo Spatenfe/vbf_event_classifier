@@ -1,8 +1,8 @@
+import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-import sys
 
 def plot_comparison(results_df, metric="val_accuracy", output_dir="."):
     """
@@ -47,22 +47,20 @@ def plot_comparison(results_df, metric="val_accuracy", output_dir="."):
     plt.close()
 
 def main():
-    file_path = "results/lower_greater_1/large_data/std/summary_results.csv"
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-        
+    parser = argparse.ArgumentParser(description="Plot per-metric comparison charts from a summary_results.csv.")
+    parser.add_argument("--input", required=True, help="Path to summary_results.csv")
+    parser.add_argument("--output-dir", default=None, help="Directory for output plots (default: same directory as input)")
+    args = parser.parse_args()
+
+    file_path = args.input
     if not os.path.exists(file_path):
         print(f"File not found: {file_path}")
-        # Try relative to the user's provided path in prompt if default fails
-        file_path = "/home/stud/foef/other/vbf_event_classifier/results/lower_greater_1/large_data/std/summary_results.csv"
-        if not os.path.exists(file_path):
-            print(f"File also not found at absolute path: {file_path}")
-            return
+        return
 
     print(f"Loading results from {file_path}")
     df = pd.read_csv(file_path)
-    
-    output_dir = os.path.dirname(file_path)
+
+    output_dir = args.output_dir or os.path.dirname(file_path) or "."
     
     # metrics to plot
     metrics = [col for col in df.columns if col != 'method']

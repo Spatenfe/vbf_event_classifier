@@ -445,7 +445,7 @@ def main():
             best_row = df.loc[df[best_metric_col].idxmax()]
             
             print("\n" + "="*60)
-            print("🏆 BEST ENSEMBLE CONSTELLATION 🏆".center(60))
+            print("BEST ENSEMBLE CONSTELLATION".center(60))
             print("="*60)
             print(f"Mode:          {best_row['mode']}")
             print(f"Num Models:    {best_row['k_models']}")

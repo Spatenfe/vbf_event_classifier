@@ -47,11 +47,7 @@ def plot_distributions(df):
     # Exclude 'cvv' and 'event_id' from this loop as 'cvv' is plotted separately and 'event_id' is an ID
     cols_to_plot = [col for col in numerical_cols if col not in ['cvv', 'event_id']]
     
-    # Limit to first 9 for a grid view example, or just plot all individually. 
-    # Let's plot top correlations or just some key features.
-    # Given the column names seen in `head`, let's plot a few specific ones like pt, eta, phi
-    
-    for col in cols_to_plot[:10]: # Limiting to first 10 for now to avoid clutter
+    for col in cols_to_plot[:10]:
         plt.figure(figsize=(8, 5))
         sns.histplot(df[col], kde=False, bins=30)
         plt.title(f'Distribution of {col}')
@@ -168,19 +164,10 @@ def plot_feature_importance(df):
     cols_to_drop = ['event_id', 'cvv']
     features = [col for col in df.columns if col not in cols_to_drop]
     X = df[features].fillna(0)
-    # Ensure y is categorical/integer for Classifier purposes if 'cvv' represents classes
-    # If 'cvv' is continuous, we should use Regressor. The config suggested classification classes 0 and 1, but cvv is float.
-    # Looking at the head, cvv is 1.5. Wait - head showed 1.5. Config said target_column "cvv", discard classes [1.0].
-    # Is it regression or classification? "vbf_event_classifier" suggests classification.
-    # Let's check unique values of cvv first.
     unique_vals = df['cvv'].unique()
     print(f"Unique target values: {unique_vals}")
-    
-    # If few unique values, treat as classification.
-    # Cast to string to ensure Classifier treats it as discrete classes
     y = df['cvv'].astype(str)
-    
-    # Using Classifier for now as it's a "classifier" project.
+
     # Limit depth and trees for speed
     rf = RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1)
     rf.fit(X, y)

@@ -1,7 +1,29 @@
-analysis_results
-.venv
-results
-__pycache__
-data
-analysis_plots
-*.json
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+
+# Virtual environments
+.venv/
+
+# Project-specific generated outputs
+results/
+analysis_results/
+analysis_plots/
+
+# Large data files
+ml_framework/data/
+
+# Generated / serialised model files
+*.pkl
+*.onnx
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/

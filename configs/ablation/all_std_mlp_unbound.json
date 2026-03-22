@@ -1,0 +1,36 @@
+{
+    "experiment_name": "3x_large_all_features_mlp_deep_4",
+    "datasource": [
+        {
+            "name": "large_data",
+            "loader": "standard_loader",
+            "data_path": "ml_framework/data/large/matched_events_all_no_dup.csv",
+            "val_split": 0.2,
+            "balance_val": true,
+            "target_column": "cvv",
+            "drop_columns": ["event_id", "vbf_q1_phi", "vbf_q1_e", "vbf_q1_m", "vbf_q1_jet_phi", "vbf_q1_jet_e", "vbf_q1_dR", "vbf_q2_phi", "vbf_q2_e", "vbf_q2_m", "vbf_q2_jet_phi", "vbf_q2_jet_e", "vbf_q2_dR", "w_qq_phi", "w_qq_m", "w_qq_jet_phi", "w_qq_dR", "w_qq_q1_eta", "w_qq_q1_phi", "w_qq_q2_eta", "w_qq_q2_phi", "w_lep_l_phi", "w_lep_v_phi", "h_bb_eta", "h_bb_phi", "h_bb_m", "h_bb_jet_eta", "h_bb_jet_phi", "h_bb_dR", "h_bb_b1_eta", "h_bb_b1_phi", "h_bb_b1_m", "h_bb_b2_eta", "h_bb_b2_phi", "h_bb_b2_m"],
+            "merge_classes": [[0.0, 0.5, 1.5, 2.0, 3.0]],
+            "discard_classes": [],
+            "balance_train": false,
+            "augmentation": {
+                "noise_std": 0.01,
+                "minority_only": true
+            }
+        }
+    ],
+    "normalization": [
+        {
+            "name": "std",
+            "scaling": "standard"
+        }
+    ],
+    "save_models": true,
+    "method_n_jobs": 32,
+    "methods": [
+        "dummy_classifier",
+        {"name": "mlp_residual_classifier", "alias": "mlp_residual_weighted", "params": {"loss_fn": "weighted_bce"}}
+    ],
+    "output": {
+        "dir": "results/ablation/"
+    }
+}

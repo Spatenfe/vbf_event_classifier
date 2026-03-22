@@ -1,0 +1,67 @@
+{
+    "experiment_name": "3x_large_all_features_std_with_diff_norms",
+    "datasource": [
+        {
+            "name": "large_data",
+            "loader": "standard_loader",
+            "data_path": "ml_framework/data/large/matched_events_all_no_dup.csv",
+            "val_split": 0.2,
+            "balance_val": true,
+            "target_column": "cvv",
+            "drop_columns": [
+                "event_id", "vbf_q1_phi", "vbf_q1_e", "vbf_q1_m", "vbf_q1_jet_phi", 
+                "vbf_q1_jet_e", "vbf_q1_dR", "vbf_q2_phi", "vbf_q2_e", "vbf_q2_m", 
+                "vbf_q2_jet_phi", "vbf_q2_jet_e", "vbf_q2_dR", "w_qq_phi", "w_qq_m", 
+                "w_qq_jet_phi", "w_qq_dR", "w_qq_q1_eta", "w_qq_q1_phi", "w_qq_q2_eta", 
+                "w_qq_q2_phi", "w_lep_l_phi", "w_lep_v_phi", "h_bb_eta", "h_bb_phi", 
+                "h_bb_m", "h_bb_jet_eta", "h_bb_jet_phi", "h_bb_dR", "h_bb_b1_eta", 
+                "h_bb_b1_phi", "h_bb_b1_m", "h_bb_b2_eta", "h_bb_b2_phi", "h_bb_b2_m"
+            ],
+            "merge_classes": [[0.0, 0.5, 1.5, 2.0, 3.0]],
+            "discard_classes": [],
+            "balance_train": "oversample",
+            "oversample_factor": 3.0
+        }
+    ],
+    "normalization": [
+        {
+            "name": "std_only",
+            "scaling": "standard"
+        },
+        {
+            "name": "std_l1",
+            "scaling": "standard",
+            "normalization": "l1"
+        },
+        {
+            "name": "std_l2",
+            "scaling": "standard",
+            "normalization": "l2"
+        },
+        {
+            "name": "std_max",
+            "scaling": "standard",
+            "normalization": "max"
+        }
+    ],
+    "save_models": true,
+    "method_n_jobs": 5,
+    "methods": [
+        "dummy_classifier",
+        "logistic_regression",
+        "random_forest",
+        "gradient_boosting",
+        "hist_gradient_boosting",
+        "sgd_classifier",
+        "mlp_classifier",
+        "lda",
+        "gaussian_nb",
+        "polynomial_lr",
+        "nystroem_sgd",
+        "bagging_classifier",
+        "voting_classifier"
+    ],
+    "output": {
+        "dir": "results/ablation/"
+    }
+}

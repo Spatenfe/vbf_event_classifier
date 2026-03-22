@@ -1,0 +1,33 @@
+{
+    "generation_name": "minority_cvv1_vae",
+    "data_path": "ml_framework/data/large/matched_events_all_no_dup.csv",
+    "target_column": "cvv",
+    "target_class": "1.0",
+    "drop_columns": [
+        "event_id",
+        "vbf_q1_phi", "vbf_q1_e", "vbf_q1_m", "vbf_q1_jet_phi", "vbf_q1_jet_e", "vbf_q1_dR",
+        "vbf_q2_phi", "vbf_q2_e", "vbf_q2_m", "vbf_q2_jet_phi", "vbf_q2_jet_e", "vbf_q2_dR",
+        "w_qq_phi", "w_qq_m", "w_qq_jet_phi", "w_qq_dR",
+        "w_qq_q1_eta", "w_qq_q1_phi", "w_qq_q2_eta", "w_qq_q2_phi",
+        "w_lep_l_phi", "w_lep_v_phi",
+        "h_bb_eta", "h_bb_phi", "h_bb_m", "h_bb_jet_eta", "h_bb_jet_phi", "h_bb_dR",
+        "h_bb_b1_eta", "h_bb_b1_phi", "h_bb_b1_m", "h_bb_b2_eta", "h_bb_b2_phi", "h_bb_b2_m"
+    ],
+    "n_samples": 20000,
+    "output_path": "ml_framework/data/generated/minority_cvv1_vae.csv",
+    "save_model": true,
+    "model_dir": "results/generation/minority_cvv1_vae/",
+    "generator": {
+        "name": "vae",
+        "params": {
+            "hidden_dims": [128, 64],
+            "latent_dim": 16,
+            "epochs": 300,
+            "batch_size": 256,
+            "learning_rate": 1e-3,
+            "kl_weight": 1.0,
+            "dropout_rate": 0.1,
+            "log_interval": 50
+        }
+    }
+}
