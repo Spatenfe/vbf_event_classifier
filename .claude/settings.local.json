@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(wc -l /home/stud/foef/other/vbf_event_classifier/ml_framework/**/*.py)"
-    ]
-  }
-}
