@@ -1,6 +1,9 @@
 """Shared base class and utilities for PyTorch-based classification methods."""
+import logging
 from ml_framework.core.base_method import BaseAlgorithm
 import torch
+
+logger = logging.getLogger(__name__)
 import torch.nn as nn
 import torch.optim as optim
 
@@ -74,7 +77,7 @@ class PyTorchBaseMethod(BaseAlgorithm):
         """Reconstruct and return an nn.Module from saved metadata."""
         raise NotImplementedError
 
-    def train(self, train_data, val_data=None):
+    def train(self, train_data, val_data=None, finetune_data=None):
         X_train, y_train = train_data
 
         self.le = LabelEncoder()
@@ -101,6 +104,7 @@ class PyTorchBaseMethod(BaseAlgorithm):
         scheduler_name = params.get('lr_scheduler', None)
         label_smoothing = params.get('label_smoothing', 0.0)
         loss_fn_name = params.get('loss_fn', 'bce')
+        warmup_epochs = params.get('warmup_epochs', 0)
 
         input_dim = X_train.shape[1]
         self.pytorch_model = self._build_model(input_dim, params)
@@ -114,13 +118,13 @@ class PyTorchBaseMethod(BaseAlgorithm):
             n_neg = max(int(np.sum(y_encoded == 0)), 1)
             pos_weight_val = float(n_neg / n_pos)
             criterion = nn.BCELoss(reduction='none')
-            print(f"Using weighted BCE: pos_weight={pos_weight_val:.2f} (n_neg={n_neg}, n_pos={n_pos})")
+            logger.info("Using weighted BCE: pos_weight=%.2f (n_neg=%d, n_pos=%d)", pos_weight_val, n_neg, n_pos)
         elif loss_fn_name == 'focal':
             focal_gamma = params.get('focal_gamma', 2.0)
             focal_alpha = params.get('focal_alpha', 0.25)
             criterion = FocalLoss(gamma=focal_gamma, alpha=focal_alpha)
             pos_weight_val = None
-            print(f"Using Focal Loss: gamma={focal_gamma}, alpha={focal_alpha}")
+            logger.info("Using Focal Loss: gamma=%.2f, alpha=%.2f", focal_gamma, focal_alpha)
         else:
             criterion = nn.BCELoss()
             pos_weight_val = None
@@ -159,6 +163,7 @@ class PyTorchBaseMethod(BaseAlgorithm):
         validation_loss_curve = []
         train_scores = []
         validation_scores = []
+        lr_curve = []
 
         for epoch in range(1, max_iter + 1):
             self.pytorch_model.train()
@@ -204,12 +209,25 @@ class PyTorchBaseMethod(BaseAlgorithm):
                 val_loss = log_loss(y_val_encoded, val_probs, labels=classes)
                 validation_loss_curve.append(val_loss)
 
-            # Step scheduler
-            if scheduler is not None:
+            # Warmup overrides LR for the first warmup_epochs epochs;
+            # the main scheduler only steps after warmup is done.
+            if warmup_epochs > 0 and epoch <= warmup_epochs:
+                warmup_lr = learning_rate_init * epoch / warmup_epochs
+                for pg in optimizer.param_groups:
+                    pg['lr'] = warmup_lr
+            elif scheduler is not None:
                 if isinstance(scheduler, optim.lr_scheduler.ReduceLROnPlateau):
                     scheduler.step(val_score)
                 else:
                     scheduler.step()
+
+            current_lr = optimizer.param_groups[0]['lr']
+            lr_curve.append(current_lr)
+            logger.info(
+                "Epoch %4d/%d | train_loss=%.4f | val_loss=%.4f | train_acc=%.4f | val_acc=%.4f | lr=%.2e | no_improve=%d/%d",
+                epoch, max_iter, epoch_loss, val_loss, train_score, val_score,
+                current_lr, epochs_no_improve, n_iter_no_change,
+            )
 
             if val_score > best_val_score + 1e-4:
                 best_val_score = val_score
@@ -220,13 +238,107 @@ class PyTorchBaseMethod(BaseAlgorithm):
                 epochs_no_improve += 1
 
             if epochs_no_improve >= n_iter_no_change:
-                print(f"Early stopping at epoch {epoch}. Best val score: {best_val_score:.4f} (epoch {best_epoch}).")
+                logger.info(
+                    "Early stopping triggered at epoch %d. Best val_acc=%.4f at epoch %d.",
+                    epoch, best_val_score, best_epoch,
+                )
                 break
 
         if best_state_dict is not None:
             self.pytorch_model.load_state_dict(best_state_dict)
 
-        # Threshold optimization: sweep to maximize val F1-macro
+        self.loss_curve_ = loss_curve
+        self.validation_loss_curve_ = validation_loss_curve
+        self.train_scores_ = train_scores
+        self.validation_scores_ = validation_scores
+        self.lr_curve_ = lr_curve
+
+        logger.info("%s phase 1 finished. Restored weights from epoch %d with val_acc=%.4f.", self.name, best_epoch, best_val_score)
+
+        # ── Phase 2: fine-tune on real data only ─────────────────────────────
+        finetune_epochs = params.get("finetune_epochs", 0)
+        if finetune_data is not None and finetune_epochs > 0:
+            finetune_lr = params.get("finetune_lr", learning_rate_init / 5)
+            logger.info(
+                "=== Phase 2: fine-tuning on real data for %d epochs (lr=%.2e) ===",
+                finetune_epochs, finetune_lr,
+            )
+
+            X_ft, y_ft = finetune_data
+            y_ft_encoded = self.le.transform(y_ft)
+
+            X_ft_t = torch.tensor(np.array(X_ft), dtype=torch.float32)
+            y_ft_t = torch.tensor(np.array(y_ft_encoded), dtype=torch.float32).unsqueeze(1)
+            ft_loader = DataLoader(TensorDataset(X_ft_t, y_ft_t), batch_size=batch_size, shuffle=True)
+
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = finetune_lr
+
+            best_ft_score = -np.inf
+            best_ft_state = None
+            best_ft_epoch = 0
+            ft_no_improve = 0
+
+            for ft_epoch in range(1, finetune_epochs + 1):
+                self.pytorch_model.train()
+                ft_loss = 0.0
+                ft_preds_all, ft_labels_all = [], []
+
+                for batch_X, batch_y in ft_loader:
+                    batch_X, batch_y = batch_X.to(device), batch_y.to(device)
+                    optimizer.zero_grad()
+                    outputs = self.pytorch_model(batch_X)
+                    batch_y_smooth = batch_y * (1 - label_smoothing) + 0.5 * label_smoothing
+                    if pos_weight_val is not None:
+                        weights = torch.where(batch_y == 1,
+                                              torch.full_like(batch_y, pos_weight_val),
+                                              torch.ones_like(batch_y))
+                        loss = (criterion(outputs, batch_y_smooth) * weights).mean()
+                    else:
+                        loss = criterion(outputs, batch_y_smooth)
+                    loss.backward()
+                    optimizer.step()
+                    ft_loss += loss.item() * batch_X.size(0)
+                    ft_preds_all.extend((outputs.detach() >= 0.5).int().flatten().cpu().numpy())
+                    ft_labels_all.extend(batch_y.flatten().cpu().numpy().astype(int))
+
+                ft_loss /= len(y_ft_encoded)
+                ft_train_acc = accuracy_score(ft_labels_all, ft_preds_all)
+
+                self.pytorch_model.eval()
+                with torch.no_grad():
+                    ft_val_probs = self.pytorch_model(X_val_t).cpu().numpy()
+                    ft_val_preds = (ft_val_probs >= 0.5).astype(int).flatten()
+                    ft_val_acc = accuracy_score(y_val_encoded, ft_val_preds)
+                    ft_val_loss = log_loss(y_val_encoded, ft_val_probs, labels=classes)
+
+                current_lr = optimizer.param_groups[0]['lr']
+                logger.info(
+                    "Finetune Epoch %4d/%d | train_loss=%.4f | val_loss=%.4f | train_acc=%.4f | val_acc=%.4f | lr=%.2e | no_improve=%d/%d",
+                    ft_epoch, finetune_epochs, ft_loss, ft_val_loss, ft_train_acc, ft_val_acc,
+                    current_lr, ft_no_improve, n_iter_no_change,
+                )
+
+                if ft_val_acc > best_ft_score + 1e-4:
+                    best_ft_score = ft_val_acc
+                    best_ft_state = copy.deepcopy(self.pytorch_model.state_dict())
+                    best_ft_epoch = ft_epoch
+                    ft_no_improve = 0
+                else:
+                    ft_no_improve += 1
+
+                if ft_no_improve >= n_iter_no_change:
+                    logger.info(
+                        "Fine-tune early stopping at epoch %d. Best val_acc=%.4f at epoch %d.",
+                        ft_epoch, best_ft_score, best_ft_epoch,
+                    )
+                    break
+
+            if best_ft_state is not None:
+                self.pytorch_model.load_state_dict(best_ft_state)
+                logger.info("Fine-tuning complete. Restored weights from ft-epoch %d (val_acc=%.4f).", best_ft_epoch, best_ft_score)
+
+        # Threshold optimization on final model weights (after phase 2 if applicable)
         from sklearn.metrics import f1_score as _f1_score
         self.pytorch_model.eval()
         with torch.no_grad():
@@ -238,14 +350,8 @@ class PyTorchBaseMethod(BaseAlgorithm):
             if f1 > best_f1:
                 best_f1, best_thresh = f1, float(t)
         self.threshold_ = best_thresh
-        print(f"Optimal threshold: {self.threshold_:.2f} (val F1-macro: {best_f1:.4f})")
-
-        self.loss_curve_ = loss_curve
-        self.validation_loss_curve_ = validation_loss_curve
-        self.train_scores_ = train_scores
-        self.validation_scores_ = validation_scores
-
-        print(f"{self.name} training finished. Restored weights from epoch {best_epoch} with val_score {best_val_score:.4f}.")
+        logger.info("Optimal threshold: %.2f (val F1-macro: %.4f)", self.threshold_, best_f1)
+        logger.info("%s training complete.", self.name)
 
         if self.output_dir:
             self._plot_loss_curves()
@@ -255,7 +361,7 @@ class PyTorchBaseMethod(BaseAlgorithm):
             return
 
         os.makedirs(self.output_dir, exist_ok=True)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(24, 6))
         epochs = range(1, len(self.loss_curve_) + 1)
 
         ax1.plot(epochs, self.loss_curve_, 'b-', linewidth=2, label='Training Loss')
@@ -276,6 +382,15 @@ class PyTorchBaseMethod(BaseAlgorithm):
         ax2.set_title('Accuracy Curve', fontsize=14, fontweight='bold')
         ax2.legend(loc='best')
         ax2.grid(True, alpha=0.3)
+
+        if self.lr_curve_:
+            ax3.plot(epochs, self.lr_curve_, 'g-', linewidth=2, label='Learning Rate')
+        ax3.set_xlabel('Epoch', fontsize=12)
+        ax3.set_ylabel('Learning Rate', fontsize=12)
+        ax3.set_title('Learning Rate Schedule', fontsize=14, fontweight='bold')
+        ax3.set_yscale('log')
+        ax3.legend(loc='best')
+        ax3.grid(True, alpha=0.3)
 
         plt.tight_layout()
         plt.savefig(os.path.join(self.output_dir, 'training_metrics.png'), dpi=150, bbox_inches='tight')

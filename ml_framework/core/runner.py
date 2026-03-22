@@ -74,6 +74,7 @@ def _run_single_method(
     emit_console_logs=True,
     save_model=False,
     feature_names=None,
+    finetune_data=None,
 ):
     """Worker function for parallel method execution."""
     if isinstance(method_config, str):
@@ -136,9 +137,12 @@ def _run_single_method(
 
             # Train
             try:
-                method.train(train_data, val_data=val_data)
+                method.train(train_data, val_data=val_data, finetune_data=finetune_data)
             except TypeError:
-                method.train(train_data)
+                try:
+                    method.train(train_data, val_data=val_data)
+                except TypeError:
+                    method.train(train_data)
             
             
             # Save model if requested
@@ -263,6 +267,11 @@ class ExperimentRunner:
         val_data = self.dataloader.get_val_data()
         test_data = self.dataloader.get_test_data()
         test_mode = self.dataloader.has_test_set()
+        finetune_data = (
+            self.dataloader.get_real_train_data()
+            if hasattr(self.dataloader, "get_real_train_data")
+            else None
+        )
         
         # Log input features and output classes
         X_train, y_train = train_data
@@ -332,6 +341,7 @@ class ExperimentRunner:
                         False,
                         self.save_model,
                         self.feature_names,
+                        finetune_data,
                     )
                     futures[future] = m_cfg
                     start_times[future] = time.monotonic()
@@ -365,6 +375,7 @@ class ExperimentRunner:
                         True,
                         self.save_model,
                         self.feature_names,
+                        finetune_data,
                     )
                     self.results.append(metrics)
                     elapsed = time.monotonic() - t0

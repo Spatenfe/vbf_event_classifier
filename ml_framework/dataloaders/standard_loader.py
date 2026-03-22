@@ -22,6 +22,8 @@ class StandardDataloader(BaseDataloader):
         self.y_test = None
         self._has_dedicated_test = False
         self.feature_names = None  # Store feature names
+        self.X_train_real = None   # Real-only train data (set when augment_path is used)
+        self.y_train_real = None
         
     def load_data(self):
         params = self.config.get("params", {})
@@ -121,6 +123,27 @@ class StandardDataloader(BaseDataloader):
                 oversample_factor=oversample_factor
             )
         
+        # Synthetic augmentation: append generated samples to train set only
+        augment_path = params.get("augment_path")
+        _n_real_train = 0  # 0 means no augmentation was applied
+        if augment_path:
+            logger.info("Loading synthetic augmentation data from %s", augment_path)
+            df_aug = pd.read_csv(augment_path)
+            X_aug = df_aug.drop(columns=[target_column])
+            y_aug = df_aug[target_column].astype(str)
+
+            # Align columns to the real train set (generated data is a feature subset)
+            train_cols = list(self.X_train.columns)
+            X_aug = X_aug.reindex(columns=train_cols)
+
+            _n_real_train = len(self.X_train)  # record split point before merging
+            self.X_train = pd.concat([self.X_train, X_aug], ignore_index=True)
+            self.y_train = pd.concat([self.y_train, y_aug], ignore_index=True)
+            logger.info(
+                "Appended %d synthetic samples. Train set: %d real + %d synthetic = %d total.",
+                len(df_aug), _n_real_train, len(df_aug), len(self.X_train),
+            )
+
         if test_path:
             df_test = pd.read_csv(test_path)
             if drop_columns:
@@ -132,7 +155,7 @@ class StandardDataloader(BaseDataloader):
             self.y_test = df_test[target_column].astype(str)
             self._has_dedicated_test = True
         
-        # Preprocessing
+        # Preprocessing (snapshot for fine-tuning is taken inside, before noise)
         self._preprocess(params)
 
     def _preprocess(self, params):
@@ -178,8 +201,38 @@ class StandardDataloader(BaseDataloader):
         if self.X_val is not None: self.X_val = self.X_val.astype(np.float32)
         if self.X_test is not None: self.X_test = self.X_test.astype(np.float32)
 
+        # Snapshot scaled+normalised train data (real + VAE, no Gaussian noise) for fine-tuning phase
+        self.X_train_real = self.X_train.copy()
+        self.y_train_real = np.asarray(self.y_train)
+
+        # Relative Gaussian noise augmentation (train only)
+        augmentation = params.get("augmentation", {})
+        noise_std = augmentation.get("noise_std") if augmentation else None
+        if noise_std:
+            rng = np.random.default_rng(42)
+            minority_only = augmentation.get("minority_only", False)
+            if minority_only:
+                y_arr = np.asarray(self.y_train)
+                counts = {cls: (y_arr == cls).sum() for cls in np.unique(y_arr)}
+                minority_cls = min(counts, key=counts.get)
+                mask = y_arr == minority_cls
+                noise = rng.normal(0.0, noise_std, self.X_train[mask].shape).astype(np.float32)
+                self.X_train[mask] = self.X_train[mask] * (1.0 + noise)
+                logger.info("Applied relative Gaussian noise augmentation (std=%.4f) to minority class '%s' only.", noise_std, minority_cls)
+            else:
+                noise = rng.normal(0.0, noise_std, self.X_train.shape).astype(np.float32)
+                self.X_train = self.X_train * (1.0 + noise)
+                logger.info("Applied relative Gaussian noise augmentation (std=%.4f) to training data.", noise_std)
+
     def get_train_data(self):
         return self.X_train, self.y_train
+
+    def get_real_train_data(self):
+        """Returns scaled train data without Gaussian noise (includes real + VAE rows).
+        Used for the fine-tuning phase. Returns None if preprocessing hasn't run yet."""
+        if self.X_train_real is None:
+            return None
+        return self.X_train_real, self.y_train_real
 
     def get_val_data(self):
         if self.X_val is None:
