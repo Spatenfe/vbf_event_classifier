@@ -337,11 +337,10 @@
     <div class="overview-panel">
       <div class="overview-panel-header">Dataset</div>
       <div class="overview-rows">
-        <div class="overview-row"><span class="ov-label">Task</span><span class="ov-value">Binary classification</span></div>
-        <div class="overview-row"><span class="ov-label">Classes</span><span class="ov-value">C<sub>1</sub> (κ<sub>2V</sub>=1) vs C<sub>not1</sub></span></div>
-        <div class="overview-row"><span class="ov-label">κ<sub>2V</sub> coupling values</span><span class="ov-value">6</span></div>
-        <div class="overview-row"><span class="ov-label">Input features</span><span class="ov-value">53</span></div>
-        <div class="overview-row"><span class="ov-label">C<sub>1</sub> matching survival</span><span class="ov-value accent">0.4%</span></div>
+        <div class="overview-row"><span class="ov-label">Task</span><span class="ov-value">Classification</span></div>
+        <div class="overview-row"><span class="ov-label">Classes</span><span class="ov-value">6</span></div>
+        <div class="overview-row"><span class="ov-label">Datapoints</span><span class="ov-value">1,044,539</span></div>
+        <div class="overview-row"><span class="ov-label">Input features</span><span class="ov-value">52</span></div>
         <div class="overview-row"><span class="ov-label">Simulation level</span><span class="ov-value">Truth-level (Delphes)</span></div>
       </div>
     </div>
@@ -403,7 +402,7 @@
   <h2>Dataset &amp; Features</h2>
   <p>
     Each event is described by kinematic four-vector observables of the reconstructed physics
-    objects, grouped by their role in the topology. In total <strong>53 features</strong> are
+    objects, grouped by their role in the topology. In total <strong>52 features</strong> are
     used (after dropping azimuthal angles and some jet-level duplicates that provide no
     discriminating power).
   </p>
@@ -441,40 +440,36 @@
       <div class="fig-caption">PCA projection of the dataset onto two principal components. The substantial class overlap reflects the fundamental difficulty of this classification task.</div>
     </div>
   </div>
-
-  <div class="fig">
-    <img src="figures/fig_corr_matrix.png" alt="Structured correlation matrix" />
-    <div class="fig-caption">Structured feature correlation matrix, sorted by kinematic type (m, η, p<sub>T</sub>, φ, E, ΔR). Block structure confirms that features describing the same physical system are most strongly correlated.</div>
-  </div>
 </section>
 
 <!-- ═══════════════════════════ FEATURE DISTRIBUTIONS ═══════════════════════════ -->
 <section>
   <h2>Feature Distributions</h2>
   <p>
-    Per-class distributions (C<sub>1</sub> in red, C<sub>not1</sub> in green) across all feature
-    groups reveal the discriminating structure of the dataset.
+    The per-class distributions (C<sub>1</sub> in red, C<sub>not1</sub> in green) reveal where
+    the coupling signal concentrates. Most kinematic variables show substantial class overlap,
+    which reflects the fundamental difficulty of the task — the coupling parameter κ<sub>2V</sub>
+    affects production rates and kinematics only at the level of small shape distortions.
+  </p>
+  <p>
+    The clearest separation is found in <strong>pseudorapidity (η)</strong> variables, particularly
+    for the VBF tagging jets. The Standard Model coupling point (cvv = 1) produces events where
+    the VBF quarks tend to populate a broader and more central η range compared to anomalous
+    coupling values, which drive more extreme forward topologies. This is consistent with the
+    physics: at the SM point, the quartic coupling partially cancels the amplitude growth from
+    the longitudinal WW contribution, softening the VBF kinematics. Energy-related variables
+    (E, p<sub>T</sub>) show little to no class separation, and azimuthal angles (φ) are nearly
+    uniform for both classes due to the rotational symmetry of the detector geometry.
   </p>
 
   <div class="fig">
     <img src="figures/fig_prop_eta.png" alt="Pseudorapidity distributions" />
-    <div class="fig-caption">Pseudorapidity (η) distributions. VBF-side variables show the most visible shape differences, with C<sub>1</sub> events tending to populate a broader and more central range.</div>
-  </div>
-
-  <div class="fig-grid">
-    <div class="fig">
-      <img src="figures/fig_prop_e.png" alt="Energy distributions" />
-      <div class="fig-caption">Energy feature distributions. Most variables show strong class overlap, confirming that energy-scale information alone provides limited discriminating power.</div>
+    <div class="fig-caption">
+      Pseudorapidity (η) distributions for C<sub>1</sub> (red) and C<sub>not1</sub> (green)
+      across all reconstructed objects. VBF-side quark variables show the most pronounced shape
+      differences and are consistently among the top-ranked features in both correlation analysis
+      and random forest feature importance.
     </div>
-    <div class="fig">
-      <img src="figures/fig_prop_m.png" alt="Mass distributions" />
-      <div class="fig-caption">Mass feature distributions. Truth-level masses show sharp peaks at known particle masses; jet-level and combination masses exhibit broader shapes with moderate class separation.</div>
-    </div>
-  </div>
-
-  <div class="fig">
-    <img src="figures/fig_prop_dR.png" alt="Delta-R distributions" />
-    <div class="fig-caption">ΔR matching distance features. Distributions are narrow and strongly peaked, with only minor differences between classes.</div>
   </div>
 </section>
 
@@ -640,59 +635,6 @@
   </table>
 </section>
 
-<!-- ═══════════════════════════ FRAMEWORK ═══════════════════════════ -->
-<section>
-  <h2>Framework</h2>
-  <p>
-    All experiments are driven by <strong>JSON configuration files</strong>. A single config
-    defines datasources, normalization strategies, methods, and output paths. The runner
-    automatically sweeps all combinations and saves results, models, and plots.
-  </p>
-
-  <div class="pipeline">
-    <div class="pipe-step">JSON config</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Data loading &amp; splitting</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Scaling / Normalization</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Sampling</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Model training</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Evaluation &amp; plots</div>
-  </div>
-
-  <h3>Quick Start</h3>
-  <pre><code># Install
-pip install -e .
-
-# Run an ablation experiment
-python -m ml_framework.core.runner --config configs/ablation/all_std.json
-
-# Aggregate results
-python scripts/aggregate_results.py --results-dir results/ablation/my_experiment
-
-# Plot summary
-python scripts/plot_summary.py --input results/ablation/my_experiment/aggregated_results.csv</code></pre>
-
-  <h3>Config Reference (key fields)</h3>
-  <table>
-    <thead>
-      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><code>datasource[].data_path</code></td><td>String</td><td>Path to the combined CSV dataset</td></tr>
-      <tr><td><code>datasource[].balance_train</code></td><td>String</td><td><code>"oversample"</code> or <code>"undersample"</code></td></tr>
-      <tr><td><code>datasource[].oversample_factor</code></td><td>Float</td><td>Multiplier relative to minority class size</td></tr>
-      <tr><td><code>datasource[].merge_classes</code></td><td>Array</td><td>Group coupling values into macro-classes</td></tr>
-      <tr><td><code>normalization[].scaling</code></td><td>String</td><td>standard / minmax / maxabs / robust / yeo-johnson / quantile_*</td></tr>
-      <tr><td><code>methods</code></td><td>Array</td><td>List of registered classifier names to train</td></tr>
-      <tr><td><code>method_n_jobs</code></td><td>Int</td><td>Parallel threads per method</td></tr>
-      <tr><td><code>save_models</code></td><td>Bool</td><td>Persist trained models to disk</td></tr>
-    </tbody>
-  </table>
-</section>
 
 <!-- ═══════════════════════════ CONCLUSION ═══════════════════════════ -->
 <section>
@@ -721,6 +663,13 @@ python scripts/plot_summary.py --input results/ablation/my_experiment/aggregated
     set was used; all reported numbers come from the validation split. Future work could apply
     the framework to detector-level data, use larger datasets, or investigate whether the
     strong DeepSets results hold under more realistic experimental conditions.
+  </p>
+  <h3>Code</h3>
+  <p>
+    The full codebase — including the config-driven experiment framework, all model implementations,
+    data preprocessing, and analysis scripts — is publicly available on GitHub. For installation
+    instructions, usage examples, and a complete config reference, refer to the
+    <a href="https://github.com/Spatenfe/vbf_event_classifier#readme" target="_blank">README</a>.
   </p>
 </section>
 
