@@ -6,15 +6,15 @@
   <title>A Machine-Learning Benchmark for Semileptonic VBF Higgs-Pair Events</title>
   <style>
     :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --surface2: #21262d;
-      --border: #30363d;
-      --accent: #58a6ff;
-      --accent2: #3fb950;
-      --text: #e6edf3;
-      --text-muted: #8b949e;
-      --tag-bg: #1f2d3d;
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface2: #eaeef2;
+      --border: #d0d7de;
+      --accent: #0969da;
+      --accent2: #1a7f37;
+      --text: #1f2328;
+      --text-muted: #636c76;
+      --tag-bg: #ddf4ff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -26,7 +26,7 @@
 
     /* ── Hero ── */
     .hero {
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2332 100%);
+      background: linear-gradient(135deg, #f0f6ff 0%, #e8f1fb 50%, #eef4ff 100%);
       border-bottom: 1px solid var(--border);
       padding: 5rem 2rem 4rem;
       text-align: center;
@@ -75,7 +75,7 @@
       transition: opacity 0.15s;
     }
     .btn:hover { opacity: 0.8; }
-    .btn-primary { background: var(--accent); color: #0d1117; }
+    .btn-primary { background: var(--accent); color: #ffffff; }
     .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 
     /* ── Layout ── */
@@ -113,24 +113,43 @@
     }
     .abstract-box p { color: var(--text); }
 
-    /* ── Stats strip ── */
-    .stats {
+    /* ── Overview panels ── */
+    .overview {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1px;
-      background: var(--border);
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    @media (max-width: 640px) { .overview { grid-template-columns: 1fr; } }
+    .overview-panel {
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
-      margin: 2rem 0;
     }
-    .stat {
-      background: var(--surface);
-      padding: 1.25rem 1.5rem;
-      text-align: center;
+    .overview-panel-header {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
     }
-    .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
-    .stat .label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .overview-rows { padding: 0.25rem 0; }
+    .overview-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.55rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+    .overview-row:last-child { border-bottom: none; }
+    .overview-row .ov-label { color: var(--text-muted); }
+    .overview-row .ov-value { font-weight: 700; color: var(--text); }
+    .overview-row .ov-value.accent { color: var(--accent); }
 
     /* ── Tables ── */
     table {
@@ -314,13 +333,29 @@
     </p>
   </div>
 
-  <div class="stats">
-    <div class="stat"><div class="num">13</div><div class="label">ML models benchmarked</div></div>
-    <div class="stat"><div class="num">78.6%</div><div class="label">Best single-event accuracy (MLP)</div></div>
-    <div class="stat"><div class="num">99.1%</div><div class="label">DeepSets accuracy (set size = 10)</div></div>
-    <div class="stat"><div class="num">53</div><div class="label">Input features</div></div>
-    <div class="stat"><div class="num">6</div><div class="label">κ<sub>2V</sub> coupling values</div></div>
-    <div class="stat"><div class="num">0.4%</div><div class="label">C<sub>1</sub> matching survival fraction</div></div>
+  <div class="overview">
+    <div class="overview-panel">
+      <div class="overview-panel-header">Dataset</div>
+      <div class="overview-rows">
+        <div class="overview-row"><span class="ov-label">Task</span><span class="ov-value">Binary classification</span></div>
+        <div class="overview-row"><span class="ov-label">Classes</span><span class="ov-value">C<sub>1</sub> (κ<sub>2V</sub>=1) vs C<sub>not1</sub></span></div>
+        <div class="overview-row"><span class="ov-label">κ<sub>2V</sub> coupling values</span><span class="ov-value">6</span></div>
+        <div class="overview-row"><span class="ov-label">Input features</span><span class="ov-value">53</span></div>
+        <div class="overview-row"><span class="ov-label">C<sub>1</sub> matching survival</span><span class="ov-value accent">0.4%</span></div>
+        <div class="overview-row"><span class="ov-label">Simulation level</span><span class="ov-value">Truth-level (Delphes)</span></div>
+      </div>
+    </div>
+    <div class="overview-panel">
+      <div class="overview-panel-header">Models</div>
+      <div class="overview-rows">
+        <div class="overview-row"><span class="ov-label">Models benchmarked</span><span class="ov-value">13 + DeepSets</span></div>
+        <div class="overview-row"><span class="ov-label">Best single-event (MLP)</span><span class="ov-value accent">78.6%</span></div>
+        <div class="overview-row"><span class="ov-label">DeepSets (set size = 10)</span><span class="ov-value accent">99.1%</span></div>
+        <div class="overview-row"><span class="ov-label">Scaling strategies</span><span class="ov-value">6</span></div>
+        <div class="overview-row"><span class="ov-label">Sampling strategies</span><span class="ov-value">3</span></div>
+        <div class="overview-row"><span class="ov-label">Normalization strategies</span><span class="ov-value">3</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
