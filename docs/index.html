@@ -272,6 +272,89 @@
     code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; color: var(--accent2); }
     pre code { color: var(--text); }
 
+    /* ── Tabs ── */
+    .tab-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      padding: 0.55rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Findings box ── */
+    .findings-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent2);
+      border-radius: 8px;
+      padding: 1.1rem 1.4rem;
+      margin-top: 1.5rem;
+    }
+    .findings-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent2);
+      margin-bottom: 0.6rem;
+    }
+    .findings-box ul { padding-left: 1.25rem; }
+    .findings-box li { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 0.4rem; }
+    .findings-box li:last-child { margin-bottom: 0; }
+
+    /* ── Toggle ── */
+    .toggle-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .toggle-bar span { font-size: 0.82rem; color: var(--text-muted); }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
     /* ── Footer ── */
     footer {
       background: var(--surface);
@@ -338,6 +421,7 @@
       <div class="overview-panel-header">Dataset</div>
       <div class="overview-rows">
         <div class="overview-row"><span class="ov-label">Task</span><span class="ov-value">Classification</span></div>
+        <div class="overview-row"><span class="ov-label">Preprocessing</span><span class="ov-value">Filtered</span></div>
         <div class="overview-row"><span class="ov-label">Classes</span><span class="ov-value">6</span></div>
         <div class="overview-row"><span class="ov-label">Datapoints</span><span class="ov-value">1,044,539</span></div>
         <div class="overview-row"><span class="ov-label">Input features</span><span class="ov-value">52</span></div>
@@ -579,60 +663,248 @@
 <section>
   <h2>Results</h2>
 
-  <h3>Best Configuration per Method</h3>
-  <p>
-    After sweeping all preprocessing combinations, the best configuration per model is summarised
-    below. <strong>Standard scaling</strong> and <strong>3× oversampling</strong> of the minority
-    class are the most common winning settings.
-  </p>
+  <!-- Tab nav -->
+  <div class="tab-nav" role="tablist">
+    <button class="tab-btn active" data-tab="best"      role="tab">Best Results</button>
+    <button class="tab-btn"        data-tab="scaling"   role="tab">Scaling</button>
+    <button class="tab-btn"        data-tab="norm"      role="tab">Normalization</button>
+    <button class="tab-btn"        data-tab="features"  role="tab">Feature Selection</button>
+    <button class="tab-btn"        data-tab="sampling"  role="tab">Sampling Methods</button>
+    <button class="tab-btn"        data-tab="ensemble"  role="tab">Ensemble</button>
+    <button class="tab-btn"        data-tab="deepset"   role="tab">DeepSet</button>
+  </div>
 
-  <table>
-    <thead>
-      <tr><th>Method</th><th>Best Accuracy</th><th>Best Sampling</th><th>Best Scaling</th></tr>
-    </thead>
-    <tbody>
-      <tr class="highlight"><td><strong>MLP Classifier</strong></td><td><strong>78.64%</strong></td><td>3× Oversample</td><td>STD</td></tr>
-      <tr><td>Gradient Boosting</td><td>77.88%</td><td>Undersampled</td><td>STD</td></tr>
-      <tr><td>HistGradient Boosting</td><td>77.84%</td><td>Undersampled</td><td>STD</td></tr>
-      <tr><td>Random Forest</td><td>77.57%</td><td>3× Oversample</td><td>STD</td></tr>
-      <tr><td>Polynomial LR</td><td>77.62%</td><td>3× Oversample</td><td>STD+L2</td></tr>
-      <tr><td>DeepSet</td><td>77.58%</td><td>Single Event</td><td>STD</td></tr>
-      <tr><td>Nystroem-SGD</td><td>77.53%</td><td>3× Oversample</td><td>Yeo-Johnson</td></tr>
-      <tr><td>Voting Classifier</td><td>77.32%</td><td>Undersampled</td><td>STD</td></tr>
-      <tr><td>Logistic Regression</td><td>77.01%</td><td>3× Oversample</td><td>MaxAbs</td></tr>
-      <tr><td>LDA</td><td>76.46%</td><td>3× Oversample</td><td>STD+Max</td></tr>
-      <tr><td>SGD Classifier</td><td>76.67%</td><td>3× Oversample</td><td>STD+L2</td></tr>
-      <tr><td>Bagging Classifier</td><td>76.44%</td><td>Undersampled</td><td>STD</td></tr>
-      <tr><td>Gaussian NB</td><td>73.95%</td><td>3× Oversample</td><td>Quantile</td></tr>
-    </tbody>
-  </table>
+  <!-- ── Best Results ── -->
+  <div class="tab-panel active" id="tab-best">
+    <p>
+      After sweeping all preprocessing combinations we identify the single best configuration
+      per model. Toggle between the chart and a summary table below.
+    </p>
+    <div class="toggle-bar">
+      <span>Chart</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="best-toggle" />
+        <span class="toggle-slider"></span>
+      </label>
+      <span>Table</span>
+    </div>
 
-  <h3>Key Findings</h3>
-  <p>
-    When all models are tuned to their best settings they end up performing at surprisingly
-    similar accuracy levels (73–79%). This suggests the difficulty lies in the data itself
-    rather than the choice of model — the dataset does not contain enough clear signal to let
-    any single model pull far ahead.
-  </p>
-  <p>
-    <strong>Ensemble voting</strong> does not improve over the best individual model because all
-    models agree on the same predictions (both correct and incorrect), confirming they all rely
-    on the same feature structure. High pairwise agreement (≥ 92% for MLP + GBT) leaves no
-    room for diversification.
-  </p>
+    <div id="best-chart">
+      <div class="fig">
+        <img src="figures/res_best.png" alt="Best configuration per method" />
+        <div class="fig-caption">Best validation accuracy per method across all ablation configurations. Sampling strategy and scaling are annotated inside each bar.</div>
+      </div>
+    </div>
 
-  <h3>Preprocessing Takeaways</h3>
-  <table>
-    <thead>
-      <tr><th>Dimension</th><th>Winner</th><th>Key observation</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Scaling</td><td>Standard (STD)</td><td>Safe default; most models insensitive to scaling choice</td></tr>
-      <tr><td>Normalisation</td><td>None (no row-norm)</td><td>Only Gaussian NB benefits; others unaffected or hurt</td></tr>
-      <tr><td>Sampling</td><td>3× oversampling</td><td>Good balance; undersampling also competitive; 10× hurts</td></tr>
-      <tr><td>Features</td><td>All features</td><td>Combination features add ~1.7% for some models</td></tr>
-    </tbody>
-  </table>
+    <div id="best-table" style="display:none;">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Best Accuracy</th><th>Best Sampling</th><th>Best Scaling</th></tr>
+        </thead>
+        <tbody>
+          <tr class="highlight"><td><strong>MLP Classifier</strong></td><td><strong>78.64%</strong></td><td>3× Oversample</td><td>STD</td></tr>
+          <tr><td>Gradient Boosting</td><td>77.88%</td><td>Undersampled</td><td>STD</td></tr>
+          <tr><td>HistGradient Boosting</td><td>77.84%</td><td>Undersampled</td><td>STD</td></tr>
+          <tr><td>Polynomial LR</td><td>77.62%</td><td>3× Oversample</td><td>STD+L2</td></tr>
+          <tr><td>Random Forest</td><td>77.57%</td><td>3× Oversample</td><td>STD</td></tr>
+          <tr><td>DeepSet</td><td>77.58%</td><td>Single Event</td><td>STD</td></tr>
+          <tr><td>Nystroem-SGD</td><td>77.53%</td><td>3× Oversample</td><td>Yeo-Johnson</td></tr>
+          <tr><td>Voting Classifier</td><td>77.32%</td><td>Undersampled</td><td>STD</td></tr>
+          <tr><td>Logistic Regression</td><td>77.01%</td><td>3× Oversample</td><td>MaxAbs</td></tr>
+          <tr><td>SGD Classifier</td><td>76.67%</td><td>3× Oversample</td><td>STD+L2</td></tr>
+          <tr><td>LDA</td><td>76.46%</td><td>3× Oversample</td><td>STD+Max</td></tr>
+          <tr><td>Bagging Classifier</td><td>76.44%</td><td>Undersampled</td><td>STD</td></tr>
+          <tr><td>Gaussian NB</td><td>73.95%</td><td>3× Oversample</td><td>Quantile</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li>All models cluster tightly in the 74–79% range when tuned to their best settings, suggesting the bottleneck is the data rather than the choice of model.</li>
+        <li>The <strong>MLP</strong> achieves the highest accuracy at <strong>78.64%</strong>, outperforming the second-best (Gradient Boosting, 77.88%) by only 0.78 percentage points.</li>
+        <li><strong>Standard scaling + 3× oversampling</strong> is the most common winning preprocessing combination across models.</li>
+        <li>Gaussian NB is the clear outlier, limited by its Gaussian feature assumption, but still reaches 74%.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Scaling ── -->
+  <div class="tab-panel" id="tab-scaling">
+    <p>
+      Feature scaling transforms each column to a common numerical range before training.
+      We compare six strategies: <strong>Standard (STD)</strong>, MinMax, MaxAbs, Robust,
+      Yeo-Johnson, Quantile (normal), and Quantile (uniform). For neural networks and distance-based
+      methods, scaling is critical because gradient updates are dominated by large-magnitude
+      features otherwise. Tree-based models are theoretically invariant but can still be affected
+      in practice through interaction with regularization.
+    </p>
+    <div class="fig">
+      <img src="figures/res_scaling_abs.png" alt="Absolute accuracy across scaling methods" />
+      <div class="fig-caption">Validation accuracy of all models grouped by scaling strategy. Each cluster of bars is one method; colours indicate scaling variant.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/res_scaling_rel.png" alt="Relative accuracy difference from baseline scaling" />
+      <div class="fig-caption">Relative accuracy difference versus the STD baseline. Positive values indicate improvement over standard scaling.</div>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li><strong>Standard scaling</strong> is a safe default — it either wins or ties with more exotic strategies for nearly every model.</li>
+        <li>Tree-based models (Random Forest, Gradient Boosting) are largely insensitive to the scaling choice, as expected from their split-based nature.</li>
+        <li>The MLP benefits most from standard scaling; Yeo-Johnson and quantile transforms offer no consistent improvement and occasionally hurt.</li>
+        <li>Gaussian NB is an exception: it benefits from quantile normalization because its Gaussian assumption is better satisfied after that transform.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Normalization ── -->
+  <div class="tab-panel" id="tab-norm">
+    <p>
+      Per-sample (row-wise) normalization scales each individual event vector to unit norm
+      after column-wise scaling. We test three variants: no normalization, L1 norm, L2 norm,
+      and Max norm. The idea is to remove scale differences between events, which can help
+      when the overall magnitude of a feature vector carries no class-discriminating information.
+    </p>
+    <div class="fig">
+      <img src="figures/res_norm_abs.png" alt="Absolute accuracy across normalization methods" />
+      <div class="fig-caption">Validation accuracy across normalization variants for each model.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/res_norm_rel.png" alt="Relative accuracy difference from no-normalization baseline" />
+      <div class="fig-caption">Relative accuracy difference versus no per-sample normalization. Positive means normalization helped.</div>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li>Per-sample normalization provides <strong>no meaningful benefit</strong> for most models — the differences are within noise.</li>
+        <li>Only <strong>Gaussian NB</strong> shows a consistent improvement with L2 normalization, because normalizing the event vector better satisfies its independence and Gaussian assumptions.</li>
+        <li>For some models (MLP, GBT) normalization slightly hurts, likely because it destroys the absolute scale information that carries class-relevant signal (e.g., total event energy).</li>
+        <li>Recommendation: skip per-sample normalization unless specifically using Gaussian NB.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Feature Selection ── -->
+  <div class="tab-panel" id="tab-features">
+    <p>
+      We compare three feature sets: <strong>all features</strong> (52 variables including
+      combination observables), <strong>old features</strong> (basic kinematic four-vectors only,
+      no derived quantities), and <strong>new features</strong> (the combination observables alone).
+      The combination features are derived quantities involving multiple reconstructed objects —
+      such as the HH invariant mass, ΔR distances between systems, and multi-object invariant
+      masses — motivated by their expected sensitivity to the coupling structure.
+    </p>
+    <div class="fig">
+      <img src="figures/res_feat_abs.png" alt="Absolute accuracy across feature sets" />
+      <div class="fig-caption">Validation accuracy for each model and feature set combination.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/res_feat_rel.png" alt="Relative accuracy difference from all-features baseline" />
+      <div class="fig-caption">Relative accuracy change when switching away from the full feature set.</div>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li>Using <strong>all features</strong> is consistently the best or tied-best choice.</li>
+        <li>Combination features add up to <strong>~1.7%</strong> accuracy for some models over basic kinematics alone.</li>
+        <li>The combination features alone (without basic kinematics) perform significantly worse, confirming they complement rather than replace the basic four-vector information.</li>
+        <li>Feature importance analysis (Random Forest) confirms that combination observables — particularly ΔR and multi-object masses — rank among the top discriminating variables.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Sampling ── -->
+  <div class="tab-panel" id="tab-sampling">
+    <p>
+      The Standard Model class (cvv = 1) has only 0.4% matching survival, leading to a
+      severe class imbalance. We compare three strategies: <strong>baseline</strong> (no
+      resampling), <strong>3× oversampling</strong> (SMOTE-style duplication of the minority
+      class to 3× its original size), <strong>10× oversampling</strong>, and
+      <strong>undersampling</strong> (reducing the majority class to match the minority).
+    </p>
+    <div class="fig">
+      <img src="figures/res_sampling_abs.png" alt="Absolute accuracy across sampling strategies" />
+      <div class="fig-caption">Validation accuracy per model under each sampling strategy.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/res_sampling_rel.png" alt="Relative accuracy difference from baseline sampling" />
+      <div class="fig-caption">Relative accuracy improvement versus the no-resampling baseline.</div>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li><strong>3× oversampling</strong> is the best overall strategy — it avoids throwing away majority class data (undersampling) without repeating minority samples too aggressively (10×).</li>
+        <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (GBT, HistGBT, Random Forest), likely because it produces a cleaner balanced dataset that those methods handle well.</li>
+        <li><strong>10× oversampling</strong> consistently hurts: the minority class is repeated so many times that models memorize it, leading to overfitting and worse generalization.</li>
+        <li>All resampling strategies outperform the baseline (no resampling), confirming that addressing the class imbalance is essential.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── Ensemble ── -->
+  <div class="tab-panel" id="tab-ensemble">
+    <p>
+      Ensemble methods combine predictions from multiple individually trained models via majority
+      voting. The idea is that if models make different errors, a vote can cancel individual
+      mistakes and improve overall accuracy. We test diverse combinations of the best-performing
+      models (MLP, GBT, HistGBT, Random Forest, Logistic Regression) and measure both accuracy
+      and macro F1 of the ensemble versus the individual member models.
+    </p>
+    <div class="fig-grid">
+      <div class="fig">
+        <img src="figures/res_ensemble_acc.png" alt="Ensemble accuracy" />
+        <div class="fig-caption">Ensemble validation accuracy for different model combinations versus individual model baselines.</div>
+      </div>
+      <div class="fig">
+        <img src="figures/res_ensemble_f1.png" alt="Ensemble F1 macro" />
+        <div class="fig-caption">Ensemble macro F1 for the same combinations.</div>
+      </div>
+    </div>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li><strong>No ensemble combination outperforms the best individual model.</strong> The MLP alone at 78.64% is not beaten by any voting ensemble.</li>
+        <li>High pairwise model agreement (≥ 92% for MLP + GBT) leaves no room for diversification — all models agree on the same predictions, both correct and incorrect.</li>
+        <li>This strongly implies that the models all learn from the same feature structure and hit the same information ceiling imposed by the data.</li>
+        <li>Ensemble methods are not a viable path to improving performance on this task without fundamentally new information (e.g., multiple events).</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ── DeepSet ── -->
+  <div class="tab-panel" id="tab-deepset">
+    <p>
+      DeepSets is a permutation-invariant architecture that classifies a <em>set</em> of N
+      events simultaneously rather than one at a time. Each event is encoded independently
+      through a shared MLP, then the encoded representations are aggregated (via max pooling,
+      attention pooling, or self-attention) before a final classification head. Because all N
+      events share the same underlying coupling parameter, using multiple events per prediction
+      provides a statistical averaging effect that makes the coupling signal much clearer.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Set size N</th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>77.58%</td><td>77.57%</td><td>77.56%</td></tr>
+        <tr><td>2</td><td>86.09%</td><td>85.22%</td><td>85.21%</td></tr>
+        <tr><td>3</td><td>90.27%</td><td>90.48%</td><td>90.47%</td></tr>
+        <tr><td>5</td><td>95.51%</td><td>95.28%</td><td>95.28%</td></tr>
+        <tr class="highlight"><td><strong>10</strong></td><td><strong>99.11%</strong></td><td><strong>98.82%</strong></td><td><strong>98.82%</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="findings-box">
+      <div class="findings-title">Key Findings</div>
+      <ul>
+        <li>Accuracy scales sharply with set size: from 77.6% at N=1 to <strong>99.1% at N=10</strong>, a gain of over 21 percentage points.</li>
+        <li>This confirms that while the coupling signal in any single event is weak, it becomes statistically unmistakable when integrated over multiple events — exactly the regime of a real experimental analysis.</li>
+        <li>An ablation over aggregation strategies (self-attention, attention pooling, max pooling) shows <strong>no significant difference</strong>: simple max pooling already captures all the relevant information, and self-attention provides no additional benefit.</li>
+        <li>The comparison with single-event models is not directly fair (more input information per prediction), but the result motivates set-level inference as a powerful strategy for coupling classification.</li>
+      </ul>
+    </div>
+  </div>
+
 </section>
 
 
@@ -685,5 +957,23 @@
   </p>
 </footer>
 
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + target).classList.add('active');
+    });
+  });
+
+  // Best results chart/table toggle
+  document.getElementById('best-toggle').addEventListener('change', function() {
+    document.getElementById('best-chart').style.display = this.checked ? 'none' : 'block';
+    document.getElementById('best-table').style.display = this.checked ? 'block' : 'none';
+  });
+</script>
 </body>
 </html>
