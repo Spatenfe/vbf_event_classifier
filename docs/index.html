@@ -373,6 +373,174 @@
     .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
     .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 
+    /* ── Sticky nav ── */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      padding: 0 1rem;
+      overflow-x: auto;
+    }
+    .site-nav a {
+      display: inline-block;
+      padding: 0.7rem 1.1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .site-nav a:hover { color: var(--text); }
+    .site-nav a.nav-active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── Headline callout ── */
+    .headline-callout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 1.75rem 0;
+    }
+    .headline-stat {
+      background: #f0f6ff;
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+    .headline-stat .hl-num {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .headline-stat .hl-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+    }
+    .headline-stat .hl-model {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Tab fade ── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .tab-panel.active { animation: fadeIn 0.2s ease; }
+
+    /* ── Mobile tab dropdown ── */
+    #tab-select {
+      display: none;
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      cursor: pointer;
+    }
+    @media (max-width: 640px) {
+      .tab-nav { display: none; }
+      #tab-select { display: block; }
+    }
+
+    /* ── Back-to-top ── */
+    #back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      z-index: 200;
+    }
+    #back-to-top.visible { opacity: 1; pointer-events: auto; }
+
+    /* ── Lightbox ── */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .lightbox-overlay img {
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 6px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+    .fig img { cursor: zoom-in; }
+
+    /* ── Citation block ── */
+    .cite-block {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .cite-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface2);
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cite-header span { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .cite-header .cite-toggle { font-size: 0.75rem; color: var(--text-muted); }
+    .cite-body { display: none; }
+    .cite-body.open { display: block; }
+    .cite-body pre {
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+    }
+    .cite-copy {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--surface2);
+      border: none;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      text-align: center;
+    }
+    .cite-copy:hover { background: var(--border); }
+
     /* ── Footer ── */
     footer {
       background: var(--surface);
@@ -387,6 +555,16 @@
   </style>
 </head>
 <body>
+
+<nav class="site-nav" id="site-nav">
+  <a href="#abstract">Abstract</a>
+  <a href="#physics">Physics</a>
+  <a href="#dataset">Dataset</a>
+  <a href="#distributions">Distributions</a>
+  <a href="#models">Models</a>
+  <a href="#results">Results</a>
+  <a href="#conclusion">Conclusion</a>
+</nav>
 
 <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
 <div class="hero">
@@ -419,7 +597,7 @@
 <div class="container">
 
 <!-- ═══════════════════════════ ABSTRACT ═══════════════════════════ -->
-<section>
+<section id="abstract">
   <h2>Abstract</h2>
   <div class="abstract-box">
     <p>
@@ -442,6 +620,19 @@
       reaches <strong>99.1%</strong>, showing the coupling signal becomes far clearer with
       multiple events.
     </p>
+  </div>
+
+  <div class="headline-callout">
+    <div class="headline-stat">
+      <div class="hl-num" data-countup="78.6" data-suffix="%">78.6%</div>
+      <div class="hl-label">Best single-event accuracy</div>
+      <div class="hl-model">MLP Classifier · 3× oversample · STD scaling</div>
+    </div>
+    <div class="headline-stat">
+      <div class="hl-num" data-countup="99.1" data-suffix="%">99.1%</div>
+      <div class="hl-label">DeepSets accuracy</div>
+      <div class="hl-model">Set size = 10 · STD scaling</div>
+    </div>
   </div>
 
   <div class="overview">
@@ -471,8 +662,49 @@
 </section>
 
 <!-- ═══════════════════════════ PHYSICS ═══════════════════════════ -->
-<section>
+<section id="physics">
   <h2>Physics Context</h2>
+
+  <!-- Decay topology diagram -->
+  <svg viewBox="0 0 680 80" style="width:100%;max-width:680px;display:block;margin:1rem auto 1.5rem;font-family:inherit;" aria-label="VBF HH decay topology">
+    <defs>
+      <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#0969da"/>
+      </marker>
+    </defs>
+    <!-- boxes -->
+    <rect x="2" y="22" width="56" height="36" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="30" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">pp</text>
+    <text x="30" y="51" text-anchor="middle" font-size="9" fill="#636c76">(VBF)</text>
+    <rect x="97" y="22" width="64" height="36" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="129" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">HH</text>
+    <text x="129" y="51" text-anchor="middle" font-size="9" fill="#636c76">Higgs pair</text>
+    <rect x="210" y="4" width="60" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="240" y="19" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">H → bb</text>
+    <text x="240" y="29" text-anchor="middle" font-size="9" fill="#636c76">b-jets</text>
+    <rect x="210" y="46" width="64" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="242" y="61" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">H → WW*</text>
+    <text x="242" y="71" text-anchor="middle" font-size="9" fill="#636c76">hadronic+leptonic</text>
+    <rect x="330" y="46" width="60" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="360" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">W → qq</text>
+    <text x="360" y="69" text-anchor="middle" font-size="9" fill="#636c76">2 light jets</text>
+    <rect x="450" y="46" width="64" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="482" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">W* → ℓν</text>
+    <text x="482" y="69" text-anchor="middle" font-size="9" fill="#636c76">lepton + MET</text>
+    <rect x="572" y="12" width="100" height="56" rx="6" fill="#eef4ff" stroke="#0969da" stroke-width="1.5"/>
+    <text x="622" y="33" text-anchor="middle" font-size="9.5" font-weight="700" fill="#0969da">bb + qq + ℓν</text>
+    <text x="622" y="46" text-anchor="middle" font-size="8.5" fill="#636c76">+ 2 VBF tag jets</text>
+    <text x="622" y="59" text-anchor="middle" font-size="8.5" fill="#636c76">+ κ₂V label</text>
+    <!-- arrows -->
+    <line x1="58" y1="40" x2="94" y2="40" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="161" y1="33" x2="207" y2="19" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="161" y1="47" x2="207" y2="60" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="274" y1="61" x2="327" y2="61" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="390" y1="61" x2="447" y2="61" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="270" y1="19" x2="568" y2="30" stroke="#0969da" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+    <line x1="514" y1="61" x2="568" y2="50" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+
   <p>
     VBF Higgs-pair production is a rare process predicted by the Standard Model whose rate is
     highly sensitive to the quartic coupling constant <strong>κ<sub>2V</sub></strong>
@@ -510,7 +742,7 @@
 </section>
 
 <!-- ═══════════════════════════ DATASET ═══════════════════════════ -->
-<section>
+<section id="dataset">
   <h2>Dataset &amp; Features</h2>
   <p>
     Each event is described by kinematic four-vector observables of the reconstructed physics
@@ -555,7 +787,7 @@
 </section>
 
 <!-- ═══════════════════════════ FEATURE DISTRIBUTIONS ═══════════════════════════ -->
-<section>
+<section id="distributions">
   <h2>Feature Distributions</h2>
   <p>
     The per-class distributions (C<sub>1</sub> in red, C<sub>not1</sub> in green) reveal where
@@ -586,7 +818,7 @@
 </section>
 
 <!-- ═══════════════════════════ METHODS ═══════════════════════════ -->
-<section>
+<section id="models">
   <h2>Models Overview</h2>
   <p>
     All classical ML models are implemented with scikit-learn and run through the same
@@ -656,8 +888,19 @@
 </section>
 
 <!-- ═══════════════════════════ RESULTS ═══════════════════════════ -->
-<section>
+<section id="results">
   <h2>Results</h2>
+
+  <!-- Mobile tab dropdown -->
+  <select id="tab-select" aria-label="Select result tab">
+    <option value="best">Best Results</option>
+    <option value="scaling">Scaling</option>
+    <option value="norm">Normalization</option>
+    <option value="features">Feature Selection</option>
+    <option value="sampling">Sampling Methods</option>
+    <option value="ensemble">Ensemble</option>
+    <option value="deepset">DeepSet</option>
+  </select>
 
   <!-- Tab nav -->
   <div class="tab-nav" role="tablist">
@@ -905,7 +1148,7 @@
 
 
 <!-- ═══════════════════════════ CONCLUSION ═══════════════════════════ -->
-<section>
+<section id="conclusion">
   <h2>Conclusion &amp; Outlook</h2>
   <p>
     This study demonstrates that binary discrimination of VBF HH events at the Standard Model
@@ -932,37 +1175,155 @@
     the framework to detector-level data, use larger datasets, or investigate whether the
     strong DeepSets results hold under more realistic experimental conditions.
   </p>
+
+  <div class="cite-block">
+    <div class="cite-header" id="cite-toggle-btn">
+      <span>📄 Cite this work</span>
+      <span class="cite-toggle" id="cite-chevron">▼ Show BibTeX</span>
+    </div>
+    <div class="cite-body" id="cite-body">
+<pre><code>@techreport{foerster2025vbf,
+  author    = {F{\"o}rster, Felix and Schneider, Lars and Mesner, Johannes},
+  title     = {A Machine-Learning Benchmark for Semileptonic VBF Higgs-Pair
+               Events in a Coupling Scan},
+  institution = {Technical University of Munich / LMU Munich},
+  year      = {2025},
+  url       = {https://spatenfe.github.io/vbf_event_classifier/}
+}</code></pre>
+      <button class="cite-copy" id="cite-copy-btn">Copy BibTeX</button>
+    </div>
+  </div>
 </section>
 
 </div><!-- /container -->
 
 <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
 <footer>
+  <p style="font-weight:600;color:var(--text);margin-bottom:0.5rem;">
+    Felix Förster, Lars Schneider, Johannes Mesner.
+    &ldquo;A Machine-Learning Benchmark for Semileptonic VBF Higgs-Pair Events in a Coupling Scan.&rdquo;
+    TU Munich / LMU Munich, 2025.
+  </p>
   <p>
-    Felix Förster, Lars Schneider, Johannes Mesner &mdash; TU Munich / LMU Munich<br/>
-    <a href="https://github.com/Spatenfe/vbf_event_classifier">github.com/Spatenfe/vbf_event_classifier</a>
+    <a href="https://github.com/Spatenfe/vbf_event_classifier">ML Framework</a>
+    &nbsp;&bull;&nbsp;
+    <a href="https://github.com/0xReself/particle-physics">DeepSet Framework</a>
     &nbsp;&bull;&nbsp;
     <a href="A_Machine_Learning_Benchmark_for_Semileptonic_VBF_Higgs_Pair_Events_in_a_Coupling_Scan-7.pdf">Read the paper</a>
   </p>
 </footer>
 
+<button id="back-to-top" title="Back to top" aria-label="Back to top">↑</button>
+
 <script>
-  // Tab switching
+  // ── Tab switching ──
+  function activateTab(target) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const btn = document.querySelector(`.tab-btn[data-tab="${target}"]`);
+    const panel = document.getElementById('tab-' + target);
+    if (btn) btn.classList.add('active');
+    if (panel) panel.classList.add('active');
+  }
+
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.tab;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + target).classList.add('active');
-    });
+    btn.addEventListener('click', () => activateTab(btn.dataset.tab));
   });
 
-  // Best results chart/table toggle
+  // ── Mobile tab dropdown ──
+  const tabSelect = document.getElementById('tab-select');
+  tabSelect.addEventListener('change', () => activateTab(tabSelect.value));
+
+  // ── Best results chart/table toggle ──
   document.getElementById('best-toggle').addEventListener('change', function() {
     document.getElementById('best-chart').style.display = this.checked ? 'none' : 'block';
     document.getElementById('best-table').style.display = this.checked ? 'block' : 'none';
   });
+
+  // ── Back-to-top button ──
+  const btt = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btt.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  btt.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ── Figure lightbox ──
+  document.querySelectorAll('.fig img').forEach(img => {
+    img.addEventListener('click', () => {
+      const overlay = document.createElement('div');
+      overlay.className = 'lightbox-overlay';
+      const clone = document.createElement('img');
+      clone.src = img.src;
+      clone.alt = img.alt;
+      overlay.appendChild(clone);
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      overlay.addEventListener('click', close);
+      const onKey = (e) => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', onKey); } };
+      document.addEventListener('keydown', onKey);
+    });
+  });
+
+  // ── Citation block toggle ──
+  document.getElementById('cite-toggle-btn').addEventListener('click', () => {
+    const body = document.getElementById('cite-body');
+    const chevron = document.getElementById('cite-chevron');
+    const open = body.classList.toggle('open');
+    chevron.textContent = open ? '▲ Hide BibTeX' : '▼ Show BibTeX';
+  });
+
+  // ── Copy BibTeX ──
+  document.getElementById('cite-copy-btn').addEventListener('click', () => {
+    const bibtex = document.querySelector('#cite-body pre code').textContent;
+    navigator.clipboard.writeText(bibtex).then(() => {
+      const btn = document.getElementById('cite-copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  });
+
+  // ── Sticky nav: highlight active section ──
+  const navLinks = document.querySelectorAll('.site-nav a');
+  const sections = document.querySelectorAll('section[id]');
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('nav-active'));
+        const active = document.querySelector(`.site-nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('nav-active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -65% 0px' });
+  sections.forEach(s => navObserver.observe(s));
+
+  // ── Count-up animation ──
+  function countUp(el) {
+    const target = parseFloat(el.dataset.countup);
+    const suffix = el.dataset.suffix || '';
+    const isInt = Number.isInteger(target);
+    const duration = 1200;
+    const start = performance.now();
+    function step(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const val = target * eased;
+      el.textContent = (isInt ? Math.round(val) : val.toFixed(1)) + suffix;
+      if (t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  const countObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        countUp(entry.target);
+        countObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  document.querySelectorAll('[data-countup]').forEach(el => countObserver.observe(el));
 </script>
 </body>
 </html>
