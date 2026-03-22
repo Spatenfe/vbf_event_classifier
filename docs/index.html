@@ -669,45 +669,10 @@
 <section id="physics">
   <h2>Physics Context</h2>
 
-  <!-- Decay topology diagram -->
-  <svg viewBox="0 0 680 80" style="width:100%;max-width:680px;display:block;margin:1rem auto 1.5rem;font-family:inherit;" aria-label="VBF HH decay topology">
-    <defs>
-      <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-        <path d="M0,0 L6,3 L0,6 Z" fill="#0969da"/>
-      </marker>
-    </defs>
-    <!-- boxes -->
-    <rect x="2" y="22" width="56" height="36" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="30" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">pp</text>
-    <text x="30" y="51" text-anchor="middle" font-size="9" fill="#636c76">(VBF)</text>
-    <rect x="97" y="22" width="64" height="36" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="129" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">HH</text>
-    <text x="129" y="51" text-anchor="middle" font-size="9" fill="#636c76">Higgs pair</text>
-    <rect x="210" y="4" width="60" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="240" y="19" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">H → bb</text>
-    <text x="240" y="29" text-anchor="middle" font-size="9" fill="#636c76">b-jets</text>
-    <rect x="210" y="46" width="64" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="242" y="61" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">H → WW*</text>
-    <text x="242" y="71" text-anchor="middle" font-size="9" fill="#636c76">hadronic+leptonic</text>
-    <rect x="330" y="46" width="60" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="360" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">W → qq</text>
-    <text x="360" y="69" text-anchor="middle" font-size="9" fill="#636c76">2 light jets</text>
-    <rect x="450" y="46" width="64" height="30" rx="6" fill="#f0f6ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="482" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#0969da">W* → ℓν</text>
-    <text x="482" y="69" text-anchor="middle" font-size="9" fill="#636c76">lepton + MET</text>
-    <rect x="572" y="12" width="100" height="56" rx="6" fill="#eef4ff" stroke="#0969da" stroke-width="1.5"/>
-    <text x="622" y="33" text-anchor="middle" font-size="9.5" font-weight="700" fill="#0969da">bb + qq + ℓν</text>
-    <text x="622" y="46" text-anchor="middle" font-size="8.5" fill="#636c76">+ 2 VBF tag jets</text>
-    <text x="622" y="59" text-anchor="middle" font-size="8.5" fill="#636c76">+ κ₂V label</text>
-    <!-- arrows -->
-    <line x1="58" y1="40" x2="94" y2="40" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="161" y1="33" x2="207" y2="19" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="161" y1="47" x2="207" y2="60" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="274" y1="61" x2="327" y2="61" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="390" y1="61" x2="447" y2="61" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-    <line x1="270" y1="19" x2="568" y2="30" stroke="#0969da" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
-    <line x1="514" y1="61" x2="568" y2="50" stroke="#0969da" stroke-width="1.5" marker-end="url(#arr)"/>
-  </svg>
+  <div class="fig" style="margin:1rem 0 1.5rem;">
+    <img src="figures/vbf_hh_boosted_topology.png" alt="VBF HH semileptonic decay topology" style="max-width:700px;" />
+    <div class="fig-caption">Decay topology: VBF HH → bb WW* → bb qq ℓν, with two additional VBF tagging jets.</div>
+  </div>
 
   <p>
     VBF Higgs-pair production is a rare process predicted by the Standard Model whose rate is
