@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 import argparse
 
 # Configuration
-DATA_PATH = "ml_framework/data/large/matched_events_all_no_dup.csv"
+DATA_PATH = "ml_framework/data/large/semileptonic_vbf_higgs_pair_events_dataset.csv"
 OUTPUT_DIR = "analysis_plots"
 
 def create_output_dir():

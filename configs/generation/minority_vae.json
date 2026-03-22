@@ -1,6 +1,6 @@
 {
     "generation_name": "minority_cvv1_vae",
-    "data_path": "ml_framework/data/large/matched_events_all_no_dup.csv",
+    "data_path": "ml_framework/data/large/semileptonic_vbf_higgs_pair_events_dataset.csv",
     "target_column": "cvv",
     "target_class": "1.0",
     "drop_columns": [

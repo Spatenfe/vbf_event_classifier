@@ -4,7 +4,7 @@
         {
             "name": "large_data",
             "loader": "standard_loader",
-            "data_path": "ml_framework/data/large/matched_events_all_no_dup.csv",
+            "data_path": "ml_framework/data/large/semileptonic_vbf_higgs_pair_events_dataset.csv",
             "val_split": 0.2,
             "balance_val": true,
             "target_column": "cvv",
