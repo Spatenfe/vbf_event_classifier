@@ -8,6 +8,9 @@
 
 **[Project Page](https://spatenfe.github.io/vbf_event_classifier/)** — paper, results, and interactive ablation study.
 
+**Authors:** Felix Foerster, Lars Schneider, Johannes Mesner (TU Munich)  
+**Advisors:** Lars Linden & Celine Stauch (LMU Munich)
+
 ---
 
 A modular ML experimentation framework for benchmarking classification methods on Vector Boson Fusion (VBF) event datasets from particle physics simulations. It supports parallel execution, runtime data balancing, synthetic minority-class data generation, and automated reporting.
