@@ -541,6 +541,36 @@
     }
     .cite-copy:hover { background: var(--border); }
 
+    /* ── Distribution selector ── */
+    .dist-selector {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin: 1.25rem 0 0.5rem;
+    }
+    .dist-select-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .dist-select-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .dist-select-group select {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.88rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      min-width: 200px;
+    }
+
     /* ── Section reveal ── */
     section { opacity: 0; transform: translateY(24px); transition: opacity 0.55s ease, transform 0.55s ease; }
     section.visible { opacity: 1; transform: translateY(0); }
@@ -765,30 +795,26 @@
 <section id="distributions">
   <h2>Feature Distributions</h2>
   <p>
-    The per-class distributions (C<sub>1</sub> in red, C<sub>not1</sub> in green) reveal where
-    the coupling signal concentrates. Most kinematic variables show substantial class overlap,
-    which reflects the fundamental difficulty of the task — the coupling parameter κ<sub>2V</sub>
-    affects production rates and kinematics only at the level of small shape distortions.
-  </p>
-  <p>
-    The clearest separation is found in <strong>pseudorapidity (η)</strong> variables, particularly
-    for the VBF tagging jets. The Standard Model coupling point (cvv = 1) produces events where
-    the VBF quarks tend to populate a broader and more central η range compared to anomalous
-    coupling values, which drive more extreme forward topologies. This is consistent with the
-    physics: at the SM point, the quartic coupling partially cancels the amplitude growth from
-    the longitudinal WW contribution, softening the VBF kinematics. Energy-related variables
-    (E, p<sub>T</sub>) show little to no class separation, and azimuthal angles (φ) are nearly
-    uniform for both classes due to the rotational symmetry of the detector geometry.
+    Select a particle and a property to explore the per-class distributions.
+    C<sub>1</sub> (SM, cvv=1) is shown in red, C<sub>not1</sub> in blue.
+    Most variables show substantial overlap — the coupling signal is a small shape distortion.
+    The clearest separation appears in <strong>pseudorapidity (η)</strong> of the VBF tagging jets.
   </p>
 
-  <div class="fig">
-    <img src="figures/fig_prop_eta.png" alt="Pseudorapidity distributions" />
-    <div class="fig-caption">
-      Pseudorapidity (η) distributions for C<sub>1</sub> (red) and C<sub>not1</sub> (green)
-      across all reconstructed objects. VBF-side quark variables show the most pronounced shape
-      differences and are consistently among the top-ranked features in both correlation analysis
-      and random forest feature importance.
+  <div class="dist-selector">
+    <div class="dist-select-group">
+      <label for="dist-particle">Particle</label>
+      <select id="dist-particle"></select>
     </div>
+    <div class="dist-select-group">
+      <label for="dist-prop">Property</label>
+      <select id="dist-prop"></select>
+    </div>
+  </div>
+
+  <div class="fig" id="dist-fig" style="margin-top:1rem;">
+    <img id="dist-img" src="" alt="" style="max-width:520px;" />
+    <div class="fig-caption" id="dist-caption"></div>
   </div>
 </section>
 
@@ -1258,6 +1284,157 @@
       setTimeout(() => { btn.textContent = orig; }, 2000);
     });
   });
+
+  // ── Feature distribution selector ──
+  const distData = {
+    "VBF Quark 1": {
+      prefix: "vbf_q1",
+      props: [
+        { label: "pT (quark)",  file: "vbf_q1_pt" },
+        { label: "η (quark)",   file: "vbf_q1_eta" },
+        { label: "pT (jet)",    file: "vbf_q1_jet_pt" },
+        { label: "η (jet)",     file: "vbf_q1_jet_eta" },
+        { label: "Mass (jet)",  file: "vbf_q1_jet_m" },
+      ]
+    },
+    "VBF Quark 2": {
+      prefix: "vbf_q2",
+      props: [
+        { label: "pT (quark)",  file: "vbf_q2_pt" },
+        { label: "η (quark)",   file: "vbf_q2_eta" },
+        { label: "pT (jet)",    file: "vbf_q2_jet_pt" },
+        { label: "η (jet)",     file: "vbf_q2_jet_eta" },
+        { label: "Mass (jet)",  file: "vbf_q2_jet_m" },
+      ]
+    },
+    "Hadronic W (system)": {
+      prefix: "w_qq",
+      props: [
+        { label: "pT",          file: "w_qq_pt" },
+        { label: "η",           file: "w_qq_eta" },
+        { label: "Energy",      file: "w_qq_e" },
+        { label: "pT (jet)",    file: "w_qq_jet_pt" },
+        { label: "η (jet)",     file: "w_qq_jet_eta" },
+        { label: "Energy (jet)",file: "w_qq_jet_e" },
+        { label: "Mass (jet)",  file: "w_qq_jet_m" },
+      ]
+    },
+    "Hadronic W – quark 1": {
+      prefix: "w_qq_q1",
+      props: [
+        { label: "pT",          file: "w_qq_q1_pt" },
+        { label: "Energy",      file: "w_qq_q1_e" },
+        { label: "Mass",        file: "w_qq_q1_m" },
+      ]
+    },
+    "Hadronic W – quark 2": {
+      prefix: "w_qq_q2",
+      props: [
+        { label: "pT",          file: "w_qq_q2_pt" },
+        { label: "Energy",      file: "w_qq_q2_e" },
+        { label: "Mass",        file: "w_qq_q2_m" },
+      ]
+    },
+    "Leptonic W – lepton": {
+      prefix: "w_lep_l",
+      props: [
+        { label: "pT",          file: "w_lep_l_pt" },
+        { label: "η",           file: "w_lep_l_eta" },
+        { label: "Energy",      file: "w_lep_l_e" },
+        { label: "Mass",        file: "w_lep_l_m" },
+      ]
+    },
+    "Leptonic W – neutrino": {
+      prefix: "w_lep_v",
+      props: [
+        { label: "pT",          file: "w_lep_v_pt" },
+        { label: "η",           file: "w_lep_v_eta" },
+        { label: "Energy",      file: "w_lep_v_e" },
+        { label: "Mass",        file: "w_lep_v_m" },
+      ]
+    },
+    "H → bb (system)": {
+      prefix: "h_bb",
+      props: [
+        { label: "pT",          file: "h_bb_pt" },
+        { label: "Energy",      file: "h_bb_e" },
+        { label: "pT (jet)",    file: "h_bb_jet_pt" },
+        { label: "Energy (jet)",file: "h_bb_jet_e" },
+        { label: "Mass (jet)",  file: "h_bb_jet_m" },
+      ]
+    },
+    "H → bb – b-jet 1": {
+      prefix: "h_bb_b1",
+      props: [
+        { label: "pT",          file: "h_bb_b1_pt" },
+        { label: "Energy",      file: "h_bb_b1_e" },
+      ]
+    },
+    "H → bb – b-jet 2": {
+      prefix: "h_bb_b2",
+      props: [
+        { label: "pT",          file: "h_bb_b2_pt" },
+        { label: "Energy",      file: "h_bb_b2_e" },
+      ]
+    },
+    "Combination": {
+      prefix: "combo",
+      props: [
+        { label: "HH mass (hbb+wqq)",   file: "hbb_wqq_m" },
+        { label: "HH pT (hbb+wqq)",     file: "hbb_wqq_pt" },
+        { label: "HH mass (hbb+lep)",   file: "hbb_lep_m" },
+        { label: "HH pT (hbb+lep)",     file: "hbb_lep_pt" },
+        { label: "HH η (hbb+lep)",      file: "hbb_lep_eta" },
+        { label: "HH mass (wqq+lep)",   file: "wqq_lep_m" },
+        { label: "HH pT (wqq+lep)",     file: "wqq_lep_pt" },
+        { label: "HH η (wqq+lep)",      file: "wqq_lep_eta" },
+        { label: "VBF mass (q1+q2)",    file: "q1_q2_m" },
+        { label: "VBF pT (q1+q2)",      file: "q1_q2_pt" },
+        { label: "VBF η (q1+q2)",       file: "q1_q2_eta" },
+      ]
+    },
+  };
+
+  const particleSel = document.getElementById('dist-particle');
+  const propSel = document.getElementById('dist-prop');
+  const distImg = document.getElementById('dist-img');
+  const distCaption = document.getElementById('dist-caption');
+
+  function updateProps() {
+    const group = distData[particleSel.value];
+    propSel.innerHTML = '';
+    group.props.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.file;
+      opt.textContent = p.label;
+      propSel.appendChild(opt);
+    });
+    updatePlot();
+  }
+
+  function updatePlot() {
+    const file = propSel.value;
+    distImg.src = `figures/dist/${file}.png`;
+    distImg.alt = file;
+    distCaption.textContent = `Distribution of ${file.replace(/_/g, ' ')} for C₁ (red, cvv=1) vs C_not₁ (blue).`;
+  }
+
+  // Populate particle selector
+  Object.keys(distData).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    particleSel.appendChild(opt);
+  });
+
+  particleSel.addEventListener('change', updateProps);
+  propSel.addEventListener('change', updatePlot);
+
+  // Default: VBF Quark 1 / η (quark)
+  particleSel.value = "VBF Quark 1";
+  updateProps();
+  propSel.value = "vbf_q1_eta";
+  updatePlot();
 
   // ── Section reveal on scroll ──
   const revealObserver = new IntersectionObserver((entries) => {
