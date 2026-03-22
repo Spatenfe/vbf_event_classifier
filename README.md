@@ -1,5 +1,15 @@
 # VBF Event Classifier
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-deep%20learning-ee4c2c.svg)](https://pytorch.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-f7931e.svg)](https://scikit-learn.org/)
+[![Project Page](https://img.shields.io/badge/Project%20Page-online-0969da.svg)](https://spatenfe.github.io/vbf_event_classifier/)
+
+**[Project Page](https://spatenfe.github.io/vbf_event_classifier/)** — paper, results, and interactive ablation study.
+
+---
+
 A modular ML experimentation framework for benchmarking classification methods on Vector Boson Fusion (VBF) event datasets from particle physics simulations. It supports parallel execution, runtime data balancing, synthetic minority-class data generation, and automated reporting.
 
 ## Features
