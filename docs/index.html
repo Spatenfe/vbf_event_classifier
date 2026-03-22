@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Machine-Learning Benchmark for Semileptonic VBF Higgs-Pair Events</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --tag-bg: #1f2d3d;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 40%, #1a2332 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+    }
+    .hero .venue {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 0.3rem 1rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.25;
+      max-width: 860px;
+      margin: 0 auto 1.5rem;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .authors {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .affiliation {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    .buttons { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.6rem 1.3rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: var(--accent); color: #0d1117; }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Layout ── */
+    .container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+    section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+    section:last-child { border-bottom: none; }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 1.2em;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+    h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    p { color: var(--text-muted); margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── Abstract ── */
+    .abstract-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 1.5rem 1.75rem;
+    }
+    .abstract-box p { color: var(--text); }
+
+    /* ── Stats strip ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+    .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+    .stat .label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 1.25rem 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--text);
+      font-weight: 600;
+      padding: 0.65rem 1rem;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface); }
+    .highlight { color: var(--accent2); font-weight: 700; }
+    .deepset-note { font-size: 0.78rem; color: var(--text-muted); font-style: italic; }
+
+    /* ── Figures ── */
+    .fig { margin: 2rem 0; text-align: center; }
+    .fig img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .fig-caption {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+      font-style: italic;
+    }
+    .fig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    @media (max-width: 640px) { .fig-grid { grid-template-columns: 1fr; } }
+
+    /* ── Feature groups ── */
+    .feature-groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .feature-group {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+    }
+    .feature-group .group-name {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.4rem;
+    }
+    .feature-group p { font-size: 0.82rem; margin: 0; }
+
+    /* ── Pipeline ── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+    .pipe-step {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .pipe-arrow { color: var(--text-muted); font-size: 1.1rem; }
+
+    /* ── DeepSet table ── */
+    .deepset-table { margin: 1.5rem 0; }
+
+    /* ── Methods list ── */
+    .methods-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .method-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+    }
+    .method-card .method-name { font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+    .method-card .method-type { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ── Code block ── */
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; color: var(--accent2); }
+    pre code { color: var(--text); }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<div class="hero">
+  <div class="venue">Machine Learning &amp; High-Energy Physics</div>
+  <h1>A Machine-Learning Benchmark for<br/><em>Semileptonic VBF Higgs-Pair Events</em><br/>in a Coupling Scan</h1>
+  <p class="authors">Felix Förster &nbsp;&bull;&nbsp; Lars Schneider &nbsp;&bull;&nbsp; Johannes Mesner</p>
+  <p class="affiliation">Technical University of Munich &nbsp;|&nbsp; advisors: Lars Linden &amp; Celine Stauch (LMU Munich)</p>
+  <div class="buttons">
+    <a class="btn btn-primary" href="https://github.com/Spatenfe/vbf_event_classifier" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38l-.01-1.35c-2.23.49-2.69-1.07-2.69-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.05-.49.05-.49.8.06 1.23.83 1.23.83.71 1.22 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.01.08-2.11 0 0 .67-.21 2.2.82A7.66 7.66 0 0 1 8 3.8c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.91.08 2.11.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48l-.01 2.2c0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      Code
+    </a>
+    <a class="btn btn-secondary" href="A_Machine_Learning_Benchmark_for_Semileptonic_VBF_Higgs_Pair_Events_in_a_Coupling_Scan-7.pdf" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4 0h5.293L14 4.707V16H4V0zm1 1v14h8V5h-4V1H5zm5 0v3h3l-3-3zM2 2H1v13h1V2zM0 3h1v11H0V3z"/></svg>
+      Paper (PDF)
+    </a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════ ABSTRACT ═══════════════════════════ -->
+<section>
+  <h2>Abstract</h2>
+  <div class="abstract-box">
+    <p>
+      This project studies the binary classification of VBF Higgs-pair production events in the
+      semileptonic channel <em>HH → bbqq&#8467;ν</em>, with the goal of determining whether a
+      matched, truth-level event representation contains enough information to distinguish
+      the Standard Model coupling point at <strong>κ<sub>2V</sub> = 1</strong> from all other
+      coupling values.
+    </p>
+    <p>
+      The Standard Model sample is strongly depleted after jet matching (only 0.4% survive
+      selection), making C<sub>1</sub> versus C<sub>not&thinsp;1</sub> a genuinely difficult
+      classification task in both data-statistics and physical terms.
+    </p>
+    <p>
+      We benchmark 13 ML models across a comprehensive preprocessing ablation — six scaling
+      strategies, three normalization strategies, and three sampling strategies — and include a
+      DeepSets model that classifies <em>sets</em> of events simultaneously. The best single-event
+      model (MLP) reaches <strong>78.6% accuracy</strong>. DeepSets with ten events per set
+      reaches <strong>99.1%</strong>, showing the coupling signal becomes far clearer with
+      multiple events.
+    </p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num">13</div><div class="label">ML models benchmarked</div></div>
+    <div class="stat"><div class="num">78.6%</div><div class="label">Best single-event accuracy (MLP)</div></div>
+    <div class="stat"><div class="num">99.1%</div><div class="label">DeepSets accuracy (set size = 10)</div></div>
+    <div class="stat"><div class="num">53</div><div class="label">Input features</div></div>
+    <div class="stat"><div class="num">6</div><div class="label">κ<sub>2V</sub> coupling values</div></div>
+    <div class="stat"><div class="num">0.4%</div><div class="label">C<sub>1</sub> matching survival fraction</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ PHYSICS ═══════════════════════════ -->
+<section>
+  <h2>Physics Context</h2>
+  <p>
+    VBF Higgs-pair production is a rare process predicted by the Standard Model whose rate is
+    highly sensitive to the quartic coupling constant <strong>κ<sub>2V</sub></strong>
+    (the <code>cvv</code> parameter). Since VBF HH production has not yet been observed, measuring
+    or constraining κ<sub>2V</sub> requires ML-assisted discrimination of events produced at the
+    SM point (cvv = 1) from events produced at anomalous coupling values.
+  </p>
+  <p>
+    We study the semileptonic decay channel
+    <em>HH → bb&thinsp;WW* → bb&thinsp;qq&thinsp;&#8467;ν</em>, producing two b-jets, two
+    light jets, a charged lepton, and a neutrino. Events are processed through a full Delphes
+    detector simulation and jet matching pipeline. The coupling scan covers
+    <strong>cvv ∈ {0.0, 0.5, 1.0, 1.5, 2.0, 3.0}</strong>.
+  </p>
+
+  <h3>Class Imbalance (after matching)</h3>
+  <table>
+    <thead>
+      <tr><th>κ<sub>2V</sub> value</th><th>Class label</th><th>Matched events</th><th>Survival fraction</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0.0</td><td>C<sub>0.0</sub></td><td>~98 000</td><td>~13%</td></tr>
+      <tr><td>0.5</td><td>C<sub>0.5</sub></td><td>~79 000</td><td>~17%</td></tr>
+      <tr class="highlight"><td><strong>1.0 (SM)</strong></td><td><strong>C<sub>1</sub></strong></td><td><strong>~3 400</strong></td><td><strong>0.4%</strong></td></tr>
+      <tr><td>1.5</td><td>C<sub>1.5</sub></td><td>~82 000</td><td>~10%</td></tr>
+      <tr><td>2.0</td><td>C<sub>2.0</sub></td><td>~140 000</td><td>~18%</td></tr>
+      <tr><td>3.0</td><td>C<sub>3.0</sub></td><td>~120 000</td><td>~21%</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Because all non-SM classes are nearly indistinguishable from each other (5-class accuracy
+    ≈ 20%, equal to random guessing), the task is reduced to the binary problem:
+    <strong>C<sub>1</sub> vs. C<sub>not&thinsp;1</sub></strong>.
+  </p>
+</section>
+
+<!-- ═══════════════════════════ DATASET ═══════════════════════════ -->
+<section>
+  <h2>Dataset &amp; Features</h2>
+  <p>
+    Each event is described by kinematic four-vector observables of the reconstructed physics
+    objects, grouped by their role in the topology. In total <strong>53 features</strong> are
+    used (after dropping azimuthal angles and some jet-level duplicates that provide no
+    discriminating power).
+  </p>
+
+  <div class="feature-groups">
+    <div class="feature-group">
+      <div class="group-name">VBF Quarks</div>
+      <p>Kinematics of the two forward tagging jets (p<sub>T</sub>, η, m, E, ΔR, jet-level).</p>
+    </div>
+    <div class="feature-group">
+      <div class="group-name">Hadronic W</div>
+      <p>System momentum and individual quark daughters from the W → qq decay.</p>
+    </div>
+    <div class="feature-group">
+      <div class="group-name">Leptonic W</div>
+      <p>Charged lepton and neutrino four-vector components.</p>
+    </div>
+    <div class="feature-group">
+      <div class="group-name">H → bb</div>
+      <p>Jet-level and b-jet daughter kinematics of the Higgs decaying to b-quarks.</p>
+    </div>
+    <div class="feature-group">
+      <div class="group-name">Combination</div>
+      <p>Derived quantities built from multiple objects: HH mass, ΔR distances, invariant masses.</p>
+    </div>
+  </div>
+
+  <div class="fig-grid">
+    <div class="fig">
+      <img src="figures/fig_correlations.png" alt="Top feature correlations with binary target" />
+      <div class="fig-caption">Top feature correlations with the binary target (C<sub>1</sub> vs C<sub>not1</sub>). Pseudorapidity variables show the strongest discriminating power.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/fig_pca.png" alt="PCA projection" />
+      <div class="fig-caption">PCA projection of the dataset onto two principal components. The substantial class overlap reflects the fundamental difficulty of this classification task.</div>
+    </div>
+  </div>
+
+  <div class="fig">
+    <img src="figures/fig_corr_matrix.png" alt="Structured correlation matrix" />
+    <div class="fig-caption">Structured feature correlation matrix, sorted by kinematic type (m, η, p<sub>T</sub>, φ, E, ΔR). Block structure confirms that features describing the same physical system are most strongly correlated.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ FEATURE DISTRIBUTIONS ═══════════════════════════ -->
+<section>
+  <h2>Feature Distributions</h2>
+  <p>
+    Per-class distributions (C<sub>1</sub> in red, C<sub>not1</sub> in green) across all feature
+    groups reveal the discriminating structure of the dataset.
+  </p>
+
+  <div class="fig">
+    <img src="figures/fig_prop_eta.png" alt="Pseudorapidity distributions" />
+    <div class="fig-caption">Pseudorapidity (η) distributions. VBF-side variables show the most visible shape differences, with C<sub>1</sub> events tending to populate a broader and more central range.</div>
+  </div>
+
+  <div class="fig-grid">
+    <div class="fig">
+      <img src="figures/fig_prop_e.png" alt="Energy distributions" />
+      <div class="fig-caption">Energy feature distributions. Most variables show strong class overlap, confirming that energy-scale information alone provides limited discriminating power.</div>
+    </div>
+    <div class="fig">
+      <img src="figures/fig_prop_m.png" alt="Mass distributions" />
+      <div class="fig-caption">Mass feature distributions. Truth-level masses show sharp peaks at known particle masses; jet-level and combination masses exhibit broader shapes with moderate class separation.</div>
+    </div>
+  </div>
+
+  <div class="fig">
+    <img src="figures/fig_prop_dR.png" alt="Delta-R distributions" />
+    <div class="fig-caption">ΔR matching distance features. Distributions are narrow and strongly peaked, with only minor differences between classes.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ METHODS ═══════════════════════════ -->
+<section>
+  <h2>Models</h2>
+  <p>
+    All classical ML models are implemented with scikit-learn and run through the same
+    config-driven framework. The PyTorch MLP uses residual connections, batch normalisation,
+    and optional SE blocks. DeepSets operates on <em>sets</em> of events.
+  </p>
+
+  <div class="methods-grid">
+    <div class="method-card">
+      <div class="method-name">Logistic Regression</div>
+      <div class="method-type">Linear</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">SGD Classifier</div>
+      <div class="method-type">Linear (online)</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Polynomial LR</div>
+      <div class="method-type">Linear + features</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">LDA</div>
+      <div class="method-type">Probabilistic</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Gaussian NB</div>
+      <div class="method-type">Probabilistic</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Decision Tree</div>
+      <div class="method-type">Tree</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Random Forest</div>
+      <div class="method-type">Ensemble (trees)</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Gradient Boosting</div>
+      <div class="method-type">Ensemble (boost)</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">HistGradientBoosting</div>
+      <div class="method-type">Ensemble (boost)</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Nystroem-SGD</div>
+      <div class="method-type">Kernel approx.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Bagging Classifier</div>
+      <div class="method-type">Ensemble</div>
+    </div>
+    <div class="method-card">
+      <div class="method-name">Voting Classifier</div>
+      <div class="method-type">Ensemble</div>
+    </div>
+    <div class="method-card" style="border-color: var(--accent);">
+      <div class="method-name" style="color:var(--accent);">MLP</div>
+      <div class="method-type">Deep learning (PyTorch)</div>
+    </div>
+    <div class="method-card" style="border-color: #bc8cff;">
+      <div class="method-name" style="color:#bc8cff;">DeepSets</div>
+      <div class="method-type">Set-based deep learning</div>
+    </div>
+  </div>
+
+  <h3>Best MLP Architecture (256 → 128 → 64)</h3>
+  <p>
+    The best-performing MLP uses a progressively shrinking funnel topology with three hidden
+    layers and ReLU activations, trained with Adam (lr = 5×10<sup>−4</sup>), batch size 256,
+    L2 regularisation (α = 0.002), and early stopping (patience 20, max 1000 epochs).
+  </p>
+
+  <h3>DeepSets</h3>
+  <p>
+    DeepSets classifies a <em>set</em> of N events simultaneously. Each event is encoded
+    independently, then aggregated (via max pooling, attention pooling, or self-attention)
+    before a final classifier head. Because more events provide more coupling signal, accuracy
+    increases sharply with set size.
+  </p>
+
+  <table class="deepset-table">
+    <thead>
+      <tr><th>Set size N</th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>77.58%</td><td>77.57%</td><td>77.56%</td></tr>
+      <tr><td>2</td><td>86.09%</td><td>85.22%</td><td>85.21%</td></tr>
+      <tr><td>3</td><td>90.27%</td><td>90.48%</td><td>90.47%</td></tr>
+      <tr><td>5</td><td>95.51%</td><td>95.28%</td><td>95.28%</td></tr>
+      <tr class="highlight"><td><strong>10</strong></td><td><strong>99.11%</strong></td><td><strong>98.82%</strong></td><td><strong>98.82%</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="deepset-note">
+    Note: DeepSets with N &gt; 1 has access to more information per prediction; the comparison
+    with single-event models is not directly fair, but demonstrates that the coupling signal
+    becomes much clearer when multiple events are considered together.
+  </p>
+</section>
+
+<!-- ═══════════════════════════ RESULTS ═══════════════════════════ -->
+<section>
+  <h2>Results</h2>
+
+  <h3>Best Configuration per Method</h3>
+  <p>
+    After sweeping all preprocessing combinations, the best configuration per model is summarised
+    below. <strong>Standard scaling</strong> and <strong>3× oversampling</strong> of the minority
+    class are the most common winning settings.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Method</th><th>Best Accuracy</th><th>Best Sampling</th><th>Best Scaling</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight"><td><strong>MLP Classifier</strong></td><td><strong>78.64%</strong></td><td>3× Oversample</td><td>STD</td></tr>
+      <tr><td>Gradient Boosting</td><td>77.88%</td><td>Undersampled</td><td>STD</td></tr>
+      <tr><td>HistGradient Boosting</td><td>77.84%</td><td>Undersampled</td><td>STD</td></tr>
+      <tr><td>Random Forest</td><td>77.57%</td><td>3× Oversample</td><td>STD</td></tr>
+      <tr><td>Polynomial LR</td><td>77.62%</td><td>3× Oversample</td><td>STD+L2</td></tr>
+      <tr><td>DeepSet</td><td>77.58%</td><td>Single Event</td><td>STD</td></tr>
+      <tr><td>Nystroem-SGD</td><td>77.53%</td><td>3× Oversample</td><td>Yeo-Johnson</td></tr>
+      <tr><td>Voting Classifier</td><td>77.32%</td><td>Undersampled</td><td>STD</td></tr>
+      <tr><td>Logistic Regression</td><td>77.01%</td><td>3× Oversample</td><td>MaxAbs</td></tr>
+      <tr><td>LDA</td><td>76.46%</td><td>3× Oversample</td><td>STD+Max</td></tr>
+      <tr><td>SGD Classifier</td><td>76.67%</td><td>3× Oversample</td><td>STD+L2</td></tr>
+      <tr><td>Bagging Classifier</td><td>76.44%</td><td>Undersampled</td><td>STD</td></tr>
+      <tr><td>Gaussian NB</td><td>73.95%</td><td>3× Oversample</td><td>Quantile</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key Findings</h3>
+  <p>
+    When all models are tuned to their best settings they end up performing at surprisingly
+    similar accuracy levels (73–79%). This suggests the difficulty lies in the data itself
+    rather than the choice of model — the dataset does not contain enough clear signal to let
+    any single model pull far ahead.
+  </p>
+  <p>
+    <strong>Ensemble voting</strong> does not improve over the best individual model because all
+    models agree on the same predictions (both correct and incorrect), confirming they all rely
+    on the same feature structure. High pairwise agreement (≥ 92% for MLP + GBT) leaves no
+    room for diversification.
+  </p>
+
+  <h3>Preprocessing Takeaways</h3>
+  <table>
+    <thead>
+      <tr><th>Dimension</th><th>Winner</th><th>Key observation</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Scaling</td><td>Standard (STD)</td><td>Safe default; most models insensitive to scaling choice</td></tr>
+      <tr><td>Normalisation</td><td>None (no row-norm)</td><td>Only Gaussian NB benefits; others unaffected or hurt</td></tr>
+      <tr><td>Sampling</td><td>3× oversampling</td><td>Good balance; undersampling also competitive; 10× hurts</td></tr>
+      <tr><td>Features</td><td>All features</td><td>Combination features add ~1.7% for some models</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════ FRAMEWORK ═══════════════════════════ -->
+<section>
+  <h2>Framework</h2>
+  <p>
+    All experiments are driven by <strong>JSON configuration files</strong>. A single config
+    defines datasources, normalization strategies, methods, and output paths. The runner
+    automatically sweeps all combinations and saves results, models, and plots.
+  </p>
+
+  <div class="pipeline">
+    <div class="pipe-step">JSON config</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Data loading &amp; splitting</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Scaling / Normalization</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Sampling</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Model training</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">Evaluation &amp; plots</div>
+  </div>
+
+  <h3>Quick Start</h3>
+  <pre><code># Install
+pip install -e .
+
+# Run an ablation experiment
+python -m ml_framework.core.runner --config configs/ablation/all_std.json
+
+# Aggregate results
+python scripts/aggregate_results.py --results-dir results/ablation/my_experiment
+
+# Plot summary
+python scripts/plot_summary.py --input results/ablation/my_experiment/aggregated_results.csv</code></pre>
+
+  <h3>Config Reference (key fields)</h3>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>datasource[].data_path</code></td><td>String</td><td>Path to the combined CSV dataset</td></tr>
+      <tr><td><code>datasource[].balance_train</code></td><td>String</td><td><code>"oversample"</code> or <code>"undersample"</code></td></tr>
+      <tr><td><code>datasource[].oversample_factor</code></td><td>Float</td><td>Multiplier relative to minority class size</td></tr>
+      <tr><td><code>datasource[].merge_classes</code></td><td>Array</td><td>Group coupling values into macro-classes</td></tr>
+      <tr><td><code>normalization[].scaling</code></td><td>String</td><td>standard / minmax / maxabs / robust / yeo-johnson / quantile_*</td></tr>
+      <tr><td><code>methods</code></td><td>Array</td><td>List of registered classifier names to train</td></tr>
+      <tr><td><code>method_n_jobs</code></td><td>Int</td><td>Parallel threads per method</td></tr>
+      <tr><td><code>save_models</code></td><td>Bool</td><td>Persist trained models to disk</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════ CONCLUSION ═══════════════════════════ -->
+<section>
+  <h2>Conclusion &amp; Outlook</h2>
+  <p>
+    This study demonstrates that binary discrimination of VBF HH events at the Standard Model
+    coupling point from all other coupling values is achievable with classical ML, but is
+    genuinely difficult due to extreme class imbalance and limited signal in single-event
+    representations.
+  </p>
+  <p>
+    Standard scaling and 3× minority oversampling form a robust preprocessing baseline.
+    Adding combination features (derived multi-object quantities) gives small but consistent
+    improvements. No ensemble combination outperforms the best individual model, confirming
+    that all methods exploit the same feature correlations.
+  </p>
+  <p>
+    The most striking result is from DeepSets: classifying sets of 10 events simultaneously
+    reaches 99.1% accuracy, compared to 77.6% for a single event. This suggests that while
+    the coupling signal in a single event is weak, it becomes highly statistically significant
+    when integrated over multiple events — exactly the situation in a real experimental analysis.
+  </p>
+  <h3>Limitations &amp; Future Work</h3>
+  <p>
+    All results are based on truth-level simulation without detector effects. No held-out test
+    set was used; all reported numbers come from the validation split. Future work could apply
+    the framework to detector-level data, use larger datasets, or investigate whether the
+    strong DeepSets results hold under more realistic experimental conditions.
+  </p>
+</section>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer>
+  <p>
+    Felix Förster, Lars Schneider, Johannes Mesner &mdash; TU Munich / LMU Munich<br/>
+    <a href="https://github.com/Spatenfe/vbf_event_classifier">github.com/Spatenfe/vbf_event_classifier</a>
+    &nbsp;&bull;&nbsp;
+    <a href="A_Machine_Learning_Benchmark_for_Semileptonic_VBF_Higgs_Pair_Events_in_a_Coupling_Scan-7.pdf">Read the paper</a>
+  </p>
+</footer>
+
+</body>
+</html>
