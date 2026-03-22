@@ -48,7 +48,7 @@
       font-size: clamp(1.6rem, 4vw, 2.6rem);
       font-weight: 700;
       line-height: 1.25;
-      max-width: 860px;
+      max-width: 1000px;
       margin: 0 auto 1.5rem;
     }
     .hero h1 em { color: var(--accent); font-style: normal; }
@@ -79,7 +79,7 @@
     .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
 
     /* ── Layout ── */
-    .container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
     section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
     section:last-child { border-bottom: none; }
     h2 {
@@ -559,7 +559,7 @@
 
 <!-- ═══════════════════════════ METHODS ═══════════════════════════ -->
 <section>
-  <h2>Models</h2>
+  <h2>Models Overview</h2>
   <p>
     All classical ML models are implemented with scikit-learn and run through the same
     config-driven framework. The PyTorch MLP uses residual connections, batch normalisation,
@@ -625,38 +625,6 @@
     </div>
   </div>
 
-  <h3>Best MLP Architecture (256 → 128 → 64)</h3>
-  <p>
-    The best-performing MLP uses a progressively shrinking funnel topology with three hidden
-    layers and ReLU activations, trained with Adam (lr = 5×10<sup>−4</sup>), batch size 256,
-    L2 regularisation (α = 0.002), and early stopping (patience 20, max 1000 epochs).
-  </p>
-
-  <h3>DeepSets</h3>
-  <p>
-    DeepSets classifies a <em>set</em> of N events simultaneously. Each event is encoded
-    independently, then aggregated (via max pooling, attention pooling, or self-attention)
-    before a final classifier head. Because more events provide more coupling signal, accuracy
-    increases sharply with set size.
-  </p>
-
-  <table class="deepset-table">
-    <thead>
-      <tr><th>Set size N</th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>1</td><td>77.58%</td><td>77.57%</td><td>77.56%</td></tr>
-      <tr><td>2</td><td>86.09%</td><td>85.22%</td><td>85.21%</td></tr>
-      <tr><td>3</td><td>90.27%</td><td>90.48%</td><td>90.47%</td></tr>
-      <tr><td>5</td><td>95.51%</td><td>95.28%</td><td>95.28%</td></tr>
-      <tr class="highlight"><td><strong>10</strong></td><td><strong>99.11%</strong></td><td><strong>98.82%</strong></td><td><strong>98.82%</strong></td></tr>
-    </tbody>
-  </table>
-  <p class="deepset-note">
-    Note: DeepSets with N &gt; 1 has access to more information per prediction; the comparison
-    with single-event models is not directly fair, but demonstrates that the coupling signal
-    becomes much clearer when multiple events are considered together.
-  </p>
 </section>
 
 <!-- ═══════════════════════════ RESULTS ═══════════════════════════ -->
