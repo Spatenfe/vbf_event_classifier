@@ -941,7 +941,7 @@
           <tr><td>HistGradient Boosting</td><td>77.84%</td><td>Undersampled</td><td>STD</td></tr>
           <tr><td>Polynomial LR</td><td>77.62%</td><td>3× Oversample</td><td>STD+L2</td></tr>
           <tr><td>Random Forest</td><td>77.57%</td><td>3× Oversample</td><td>STD</td></tr>
-          <tr><td>DeepSet</td><td>77.58%</td><td>Single Event</td><td>STD</td></tr>
+          <tr><td>DeepSet (single event)</td><td>77.58%</td><td>Single Event</td><td>STD</td></tr>
           <tr><td>Nystroem-SGD</td><td>77.53%</td><td>3× Oversample</td><td>Yeo-Johnson</td></tr>
           <tr><td>Voting Classifier</td><td>77.32%</td><td>Undersampled</td><td>STD</td></tr>
           <tr><td>Logistic Regression</td><td>77.01%</td><td>3× Oversample</td><td>MaxAbs</td></tr>
@@ -1035,7 +1035,7 @@
     </div>
     <div class="fig">
       <img src="figures/res_feat_rel.png" alt="Relative accuracy difference from all-features baseline" />
-      <div class="fig-caption">Relative accuracy change when switching away from the full feature set.</div>
+      <div class="fig-caption">Relative accuracy change when comparing against the basic feature set.</div>
     </div>
     <div class="findings-box">
       <div class="findings-title">Key Findings</div>
@@ -1043,7 +1043,6 @@
         <li>Using <strong>all features</strong> is consistently the best or tied-best choice.</li>
         <li>Combination features add up to <strong>~1.7%</strong> accuracy for some models over basic kinematics alone.</li>
         <li>The combination features alone (without basic kinematics) perform significantly worse, confirming they complement rather than replace the basic four-vector information.</li>
-        <li>Feature importance analysis (Random Forest) confirms that combination observables — particularly ΔR and multi-object masses — rank among the top discriminating variables.</li>
       </ul>
     </div>
   </div>
@@ -1052,26 +1051,24 @@
   <div class="tab-panel" id="tab-sampling">
     <p>
       The Standard Model class (cvv = 1) has only 0.4% matching survival, leading to a
-      severe class imbalance. We compare three strategies: <strong>baseline</strong> (no
-      resampling), <strong>3× oversampling</strong> (SMOTE-style duplication of the minority
-      class to 3× its original size), <strong>10× oversampling</strong>, and
-      <strong>undersampling</strong> (reducing the majority class to match the minority).
+      severe class imbalance. We compare three strategies: <strong>undersampling</strong> (reducing the majority class to match the minority), 
+      <strong>3× oversampling</strong> (SMOTE-style duplication of the minority
+      class to 3× its original size), and <strong>10× oversampling</strong>.
     </p>
     <div class="fig">
       <img src="figures/res_sampling_abs.png" alt="Absolute accuracy across sampling strategies" />
       <div class="fig-caption">Validation accuracy per model under each sampling strategy.</div>
     </div>
     <div class="fig">
-      <img src="figures/res_sampling_rel.png" alt="Relative accuracy difference from baseline sampling" />
-      <div class="fig-caption">Relative accuracy improvement versus the no-resampling baseline.</div>
+      <img src="figures/res_sampling_rel.png" alt="Relative accuracy plot difference from undersampling" />
+      <div class="fig-caption">Relative accuracy improvement versus the undersampling baseline.</div>
     </div>
     <div class="findings-box">
       <div class="findings-title">Key Findings</div>
       <ul>
-        <li><strong>3× oversampling</strong> is the best overall strategy — it avoids throwing away majority class data (undersampling) without repeating minority samples too aggressively (10×).</li>
-        <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (GBT, HistGBT, Random Forest), likely because it produces a cleaner balanced dataset that those methods handle well.</li>
+        <li><strong>3× oversampling</strong> surprisingly only improves the SGD classifier. This suggests that more data from the majority class doesn't improve performance.</li>
+        <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (BG, HistGBT, Random Forest), likely because it produces a cleaner, balanced dataset that those methods handle well.</li>
         <li><strong>10× oversampling</strong> consistently hurts: the minority class is repeated so many times that models memorize it, leading to overfitting and worse generalization.</li>
-        <li>All resampling strategies outperform the baseline (no resampling), confirming that addressing the class imbalance is essential.</li>
       </ul>
     </div>
   </div>
@@ -1177,7 +1174,7 @@
       <span class="cite-toggle" id="cite-chevron">▼ Show BibTeX</span>
     </div>
     <div class="cite-body" id="cite-body">
-<pre><code>@techreport{foerster2025vbf,
+<pre><code>@techreport{benchmark2025vbf,
   author    = {Foerster, Felix and Schneider, Lars and Mesner, Johannes and Linden, Lars and Stauch, Celine},
   title     = {A Machine-Learning Benchmark for Semileptonic VBF Higgs-Pair
                Events in a Coupling Scan},
