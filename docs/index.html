@@ -639,24 +639,18 @@
   <h2>Abstract</h2>
   <div class="abstract-box">
     <p>
-      This project studies the binary classification of VBF Higgs-pair production events in the
-      semileptonic channel <em>HH → bbqq&#8467;ν</em>, with the goal of determining whether a
-      matched, truth-level event representation contains enough information to distinguish
-      the Standard Model coupling point at <strong>κ<sub>2V</sub> = 1</strong> from all other
-      coupling values.
-    </p>
-    <p>
-      The Standard Model sample is strongly depleted after jet matching (only 0.4% survive
-      selection), making C<sub>1</sub> versus C<sub>not&thinsp;1</sub> a genuinely difficult
-      classification task in both data-statistics and physical terms.
-    </p>
-    <p>
-      We benchmark 13 ML models across a comprehensive preprocessing ablation — six scaling
-      strategies, three normalization strategies, and three sampling strategies — and include a
-      DeepSets model that classifies <em>sets</em> of events simultaneously. The best single-event
-      model (MLP) reaches <strong>78.6% accuracy</strong>. DeepSets with ten events per set
-      reaches <strong>99.1%</strong>, showing the coupling signal becomes far clearer with
-      multiple events.
+      We present a machine-learning benchmark for non-resonant vector-boson-
+      fusion Higgs-pair production in the semileptonic channel HH → bbW W → bbqqℓν. From
+      truth-level Monte Carlo samples, we build a selected and matched event-level dataset
+      and represent each event with kinematic features for the main physics objects and their
+      combinations. We then study whether this representation can distinguish different values
+      of the coupling scan parameter cvv, with focus on the binary separation of the Standard
+      Model reference point cvv = 1 from the remaining sampled classes. We find that this
+      task is learnable with the available feature set. The full representation performs best
+      overall, while several nonlinear models reach similar accuracy. In contrast, scaling and
+      oversampling show mixed effects, and ensemble methods do not clearly improve on the
+      best individual models. These results show that the matched event representation retains
+      useful information for coupling classification in semileptonic VBF Higgs-pair events.
     </p>
   </div>
 
