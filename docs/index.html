@@ -967,7 +967,7 @@
   <div class="tab-panel" id="tab-scaling">
     <p>
       Feature scaling transforms each column to a common numerical range before training.
-      We compare six strategies: <strong>Standard (STD)</strong>, MinMax, MaxAbs, Robust,
+      We compare 7 strategies: <strong>Standard (STD)</strong>, MinMax, MaxAbs, Robust,
       Yeo-Johnson, Quantile (normal), and Quantile (uniform). For neural networks and distance-based
       methods, scaling is critical because gradient updates are dominated by large-magnitude
       features otherwise. Tree-based models are theoretically invariant but can still be affected
@@ -996,7 +996,7 @@
   <div class="tab-panel" id="tab-norm">
     <p>
       Per-sample (row-wise) normalization scales each individual event vector to unit norm
-      after column-wise scaling. We test three variants: no normalization, L1 norm, L2 norm,
+      after column-wise scaling. We test four variants: no normalization, L1 norm, L2 norm,
       and Max norm. The idea is to remove scale differences between events, which can help
       when the overall magnitude of a feature vector carries no class-discriminating information.
     </p>
