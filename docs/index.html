@@ -937,7 +937,7 @@
         </thead>
         <tbody>
           <tr class="highlight"><td><strong>MLP Classifier</strong></td><td><strong>78.64%</strong></td><td>3× Oversample</td><td>STD</td></tr>
-          <tr><td>Gradient Boosting</td><td>77.88%</td><td>Undersampled</td><td>STD</td></tr>
+          <tr><td>Gradient Boosting</td><td>77.86%</td><td>Undersampled</td><td>STD</td></tr>
           <tr><td>HistGradient Boosting</td><td>77.84%</td><td>Undersampled</td><td>STD</td></tr>
           <tr><td>Polynomial LR</td><td>77.62%</td><td>3× Oversample</td><td>STD+L2</td></tr>
           <tr><td>Random Forest</td><td>77.57%</td><td>3× Oversample</td><td>STD</td></tr>
@@ -956,7 +956,7 @@
       <div class="findings-title">Key Findings</div>
       <ul>
         <li>All models cluster tightly in the 74–79% range when tuned to their best settings, suggesting the bottleneck is the data rather than the choice of model.</li>
-        <li>The <strong>MLP</strong> achieves the highest accuracy at <strong>78.64%</strong>, outperforming the second-best (Gradient Boosting, 77.88%) by only 0.76 percentage points.</li>
+        <li>The <strong>MLP</strong> achieves the highest accuracy at <strong>78.64%</strong>, outperforming the second-best (Gradient Boosting, 77.86%) by only 0.78 percentage points.</li>
         <li><strong>Standard scaling + 3× oversampling</strong> is the most common winning preprocessing combination across models.</li>
         <li>Gaussian NB is the clear outlier, limited by its Gaussian feature assumption, but still reaches 74%.</li>
       </ul>
