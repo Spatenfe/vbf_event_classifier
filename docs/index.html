@@ -676,18 +676,18 @@
         <div class="overview-row"><span class="ov-label">Classes</span><span class="ov-value">6</span></div>
         <div class="overview-row"><span class="ov-label">Datapoints</span><span class="ov-value">1,044,539</span></div>
         <div class="overview-row"><span class="ov-label">Input features</span><span class="ov-value">52</span></div>
-        <div class="overview-row"><span class="ov-label">Simulation level</span><span class="ov-value">Truth-level (Delphes)</span></div>
+        <div class="overview-row"><span class="ov-label">Simulation level</span><span class="ov-value">Delphes</span></div>
       </div>
     </div>
     <div class="overview-panel">
       <div class="overview-panel-header">Models</div>
       <div class="overview-rows">
-        <div class="overview-row"><span class="ov-label">Models benchmarked</span><span class="ov-value">13 + DeepSets</span></div>
+        <div class="overview-row"><span class="ov-label">Models benchmarked</span><span class="ov-value">12 + DeepSets</span></div>
         <div class="overview-row"><span class="ov-label">Best single-event (MLP)</span><span class="ov-value accent">78.6%</span></div>
         <div class="overview-row"><span class="ov-label">DeepSets (set size = 10)</span><span class="ov-value accent">99.1%</span></div>
-        <div class="overview-row"><span class="ov-label">Scaling strategies</span><span class="ov-value">6</span></div>
+        <div class="overview-row"><span class="ov-label">Scaling strategies</span><span class="ov-value">7</span></div>
         <div class="overview-row"><span class="ov-label">Sampling strategies</span><span class="ov-value">3</span></div>
-        <div class="overview-row"><span class="ov-label">Normalization strategies</span><span class="ov-value">3</span></div>
+        <div class="overview-row"><span class="ov-label">Normalization strategies</span><span class="ov-value">4</span></div>
       </div>
     </div>
   </div>
@@ -956,7 +956,7 @@
       <div class="findings-title">Key Findings</div>
       <ul>
         <li>All models cluster tightly in the 74–79% range when tuned to their best settings, suggesting the bottleneck is the data rather than the choice of model.</li>
-        <li>The <strong>MLP</strong> achieves the highest accuracy at <strong>78.64%</strong>, outperforming the second-best (Gradient Boosting, 77.88%) by only 0.78 percentage points.</li>
+        <li>The <strong>MLP</strong> achieves the highest accuracy at <strong>78.64%</strong>, outperforming the second-best (Gradient Boosting, 77.88%) by only 0.76 percentage points.</li>
         <li><strong>Standard scaling + 3× oversampling</strong> is the most common winning preprocessing combination across models.</li>
         <li>Gaussian NB is the clear outlier, limited by its Gaussian feature assumption, but still reaches 74%.</li>
       </ul>
@@ -1066,7 +1066,7 @@
     <div class="findings-box">
       <div class="findings-title">Key Findings</div>
       <ul>
-        <li><strong>3× oversampling</strong> surprisingly only improves the SGD classifier. This suggests that more data from the majority class doesn't improve performance.</li>
+        <li><strong>3× oversampling</strong> surprisingly only improves the SGD classifier significantly. This suggests that more data from the majority class doesn't improve performance.</li>
         <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (BG, HistGBT, Random Forest), likely because it produces a cleaner, balanced dataset that those methods handle well.</li>
         <li><strong>10× oversampling</strong> consistently hurts: the minority class is repeated so many times that models memorize it, leading to overfitting and worse generalization.</li>
       </ul>
