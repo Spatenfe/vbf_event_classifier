@@ -723,12 +723,12 @@
       <tr><th>κ<sub>2V</sub> value</th><th>Class label</th><th>Matched events</th><th>Survival fraction</th></tr>
     </thead>
     <tbody>
-      <tr><td>0.0</td><td>C<sub>0.0</sub></td><td>~98 000</td><td>~13%</td></tr>
-      <tr><td>0.5</td><td>C<sub>0.5</sub></td><td>~79 000</td><td>~17%</td></tr>
-      <tr class="highlight"><td><strong>1.0 (SM)</strong></td><td><strong>C<sub>1</sub></strong></td><td><strong>~3 400</strong></td><td><strong>~0.4%</strong></td></tr>
-      <tr><td>1.5</td><td>C<sub>1.5</sub></td><td>~82 000</td><td>~10%</td></tr>
-      <tr><td>2.0</td><td>C<sub>2.0</sub></td><td>~140 000</td><td>~18%</td></tr>
-      <tr><td>3.0</td><td>C<sub>3.0</sub></td><td>~120 000</td><td>~21%</td></tr>
+      <tr><td>0.0</td><td>C<sub>0.0</sub></td><td>243 917</td><td>12.20%</td></tr>
+      <tr><td>0.5</td><td>C<sub>0.5</sub></td><td>180 456</td><td>9.02%</td></tr>
+      <tr class="highlight"><td><strong>1.0 (SM)</strong></td><td><strong>C<sub>1</sub></strong></td><td><strong>~19 796</strong></td><td><strong>~0.40%</strong></td></tr>
+      <tr><td>1.5</td><td>C<sub>1.5</sub></td><td>209 702</td><td>20.97%</td></tr>
+      <tr><td>2.0</td><td>C<sub>2.0</sub></td><td>204 740</td><td>20.47%</td></tr>
+      <tr><td>3.0</td><td>C<sub>3.0</sub></td><td>185 928</td><td>18.59%</td></tr>
     </tbody>
   </table>
   <p>
@@ -1067,7 +1067,7 @@
       <div class="findings-title">Key Findings</div>
       <ul>
         <li><strong>3× oversampling</strong> surprisingly only improves the SGD classifier significantly. This suggests that more data from the majority class doesn't improve performance.</li>
-        <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (BG, HistGBT, Random Forest), likely because it produces a cleaner, balanced dataset that those methods handle well.</li>
+        <li><strong>Undersampling</strong> is surprisingly competitive and wins for tree-based models (GB, HistGBT, Random Forest), likely because it produces a cleaner, balanced dataset that those methods handle well.</li>
         <li><strong>10× oversampling</strong> consistently hurts: the minority class is repeated so many times that models memorize it, leading to overfitting and worse generalization.</li>
       </ul>
     </div>
